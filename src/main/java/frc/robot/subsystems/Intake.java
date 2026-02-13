@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -15,6 +16,7 @@ public class Intake extends SubsystemBase {
   private TalonFX intakeLift = new TalonFX(14);
 
 
+  final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Intake() {
     var talonFXConfigs = new TalonFXConfiguration();
@@ -56,7 +58,7 @@ public class Intake extends SubsystemBase {
     intake.set(speed);
   } 
   public void intakeLift(Double Pos) {
-    intakeLift.setPosition(Pos);
+    intakeLift.setControl(m_motmag.withPosition(Pos));
   }
 
   @Override
