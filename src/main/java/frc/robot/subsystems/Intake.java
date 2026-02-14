@@ -10,10 +10,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.intakeConstants;
 
 public class Intake extends SubsystemBase {
-  private TalonFX intake = new TalonFX(60);
-  private TalonFX intakeLift = new TalonFX(14);
+  private TalonFX intake = new TalonFX(intakeConstants.intakeID);
+  private TalonFX intakeLift = new TalonFX(intakeConstants.liftID);
+  private TalonFX hopper = new TalonFX(intakeConstants.hopperID);
+  private TalonFX kicker = new TalonFX(intakeConstants.kickerID);
 
 
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
@@ -33,7 +37,7 @@ public class Intake extends SubsystemBase {
     intake.getConfigurator().apply(config);
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
+    motionMagicConfigs.MotionMagicCruiseVelocity = 180; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
     motionMagicConfigs.MotionMagicAcceleration = 260; // 160 rps/s acceleration (0.5 seconds) //220
     motionMagicConfigs.MotionMagicJerk = 3200; // 1600 rps/s^2 jerk (0.1 seconds)
 
@@ -42,27 +46,48 @@ public class Intake extends SubsystemBase {
     slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot0Configs.kP = 2.5; //4.8
+    slot0Configs.kP = 2; //4.8
     slot0Configs.kI = 0;
     slot0Configs.kD = 0.1;
 
     config.Slot0 = slot0Configs;
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
 
     intakeLift.getConfigurator().apply(motionMagicConfigs);
     intake.getConfigurator().apply(slot0Configs); 
+    intakeLift.getConfigurator().apply(slot0Configs); 
+
+  
 
   }
 
-  public void runIntake(Double speed) {
+  public void runIntake(double speed) {
     intake.set(speed);
   } 
-  public void intakeLift(Double Pos) {
+  public void intakeLift(double Pos) {
     intakeLift.setControl(m_motmag.withPosition(Pos));
   }
 
+  public void manualIntake(double speed) {
+    intakeLift.set(speed);
+  }
+
+  public void hopper (double speed, double kickerSpeed) {
+    hopper.set(speed);
+    kicker.set(kickerSpeed);
+  }
+
+  public void stopIntake() {
+    hopper.set(0);
+    kicker.set(0);
+    intake.set(0);
+  }
+
+
   @Override
   public void periodic() {
+    // System.out.println("lift position " + intakeLift.getPosition());
     // This method will be called once per scheduler run
   }
 }

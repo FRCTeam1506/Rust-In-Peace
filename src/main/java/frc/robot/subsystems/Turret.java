@@ -31,11 +31,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.Constants.TurretConstants;
+import frc.robot.Constants.turretConstants;
 import frc.robot.generated.TunerConstants;
 
 public class Turret extends SubsystemBase {
-  DigitalInput zeroTurret = new DigitalInput(6);
+  DigitalInput zeroTurret = new DigitalInput(turretConstants.turretID);
   //public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final CommandSwerveDrivetrain drivetrain; 
 
@@ -128,7 +128,7 @@ public class Turret extends SubsystemBase {
   public final static CommandXboxController driver = new CommandXboxController(0);
   
   /** Creates a new Turret. */
-    private TalonFX Turret = new TalonFX(TurretConstants.TURRET_ID);
+    private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID);
     final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
     
     // private Encoder encoder = new Encoder(0, 0);
@@ -260,8 +260,6 @@ public class Turret extends SubsystemBase {
       // preTheta = (goalY - drivetrain.getState().Pose.getY()) / (goalX - drivetrain.getState().Pose.getX());
       // theta = Math.atan(preTheta);
     heading = drivetrain.getState().Pose.getRotation().getDegrees();
-      // thetaX = goalX - drivetrain.getState().Pose.getX();
-      // thetaY = goalY - drivetrain.getState().Pose.getY();
     theta = Math.atan2(thetaY, thetaX);
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
@@ -334,28 +332,6 @@ public class Turret extends SubsystemBase {
     }
 
 
-  //   //add some sort of variable that gives the turret angle based on the encoder position
-  //   //turretAngle = (encoder.getDistance() / 4096) * 360;
-
-  //   //add some sort of function such that the turret is constantly facing the hub
-  //   /*Facing Hub Function
-  //    * 
-  //    * 
-  //    */
-
-  //   // This method will be called once per scheduler run
-
-
-  //   //Math to get turret angle to goal
-  //   // //theta = Math.atan2((drivetrain.getState().Pose.getY() - goalY), (drivetrain.getState().Pose.getX() - goalX));
-  //   // theta = Math.atan((goalY - vRobotY) / (goalX - vRobotX));
-  //   // angleToGoal = 90 - theta;
-  //   // heading = drivetrain.getPigeon2().getYaw().getValueAsDouble() / 360;
-  //   // double turretAngleTarget = angleToGoal - heading;
-  //   // double finalTurretPos = turretAngleTarget * 13.2;
-  //   // Turret.setControl(m_motmag.withPosition(finalTurretPos));
-  //   // System.out.println(finalTurretPos);
-
     if (shootMode > 4) {
       shootMode = 4;
     } else if (shootMode < 0) {
@@ -371,8 +347,6 @@ public class Turret extends SubsystemBase {
       zeroTurret();
 
 
-    }// else {
-      // System.out.println("false");
-    // }
+    }
   }
 }

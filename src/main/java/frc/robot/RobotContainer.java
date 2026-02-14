@@ -16,14 +16,16 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.Shooter;
 
 public class RobotContainer {
 
     Intake intake = new Intake();
+    Shooter shooter = new Shooter();
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -64,18 +66,33 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
+        joystick.y().whileTrue(drivetrain.applyRequest(() -> brake));
+        joystick.x().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
-        joystick.y().whileTrue(new InstantCommand(() -> intake.runIntake(0.6)));
-        joystick.y().whileFalse(new InstantCommand(() -> intake.runIntake(0.0)));
-        joystick.x().whileTrue(new InstantCommand(() -> intake.runIntake(-0.6)));
-        joystick.x().whileFalse(new InstantCommand(() -> intake.runIntake(0.0)));
+        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.6))));
+        joystick.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
-        joystick.povUp().whileTrue(new InstantCommand(() -> intake.intakeLift(-3.983398)));
-        joystick.povDown().whileTrue(new InstantCommand(() -> intake.intakeLift(-0.312500)));
+        joystick.rightTrigger().whileTrue(new shoot(shooter, intake));
+
+        joystick.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
+
+        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.setHood(/*Constants.shooterConstants.hoodUpPosition*/)));
+        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.setHood(/*Constants.shooterConstants.hoodDownPosition*/)));
+
+        // joystick.leftStick().whileTrue(new InstantCommand(() -> intake.hopper(0.5, -0.5)));
+        // joystick.leftStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
+        // joystick.rightStick().whileTrue(new InstantCommand(() -> intake.hopper(-0.5, 0.5)));
+        // joystick.rightStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
+
+        //MANUAL SHOOTER HOOD
+        joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+
+        //MANUAL SHOOTER POWER
+        joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
