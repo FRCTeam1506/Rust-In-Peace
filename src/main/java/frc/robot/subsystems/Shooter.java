@@ -52,6 +52,7 @@ public class Shooter extends SubsystemBase {
     slot0Configs.kD = 0.1;
 
     config.Slot0 = slot0Configs;
+    
 
     m_motmag.EnableFOC = true;
 
@@ -77,28 +78,32 @@ public class Shooter extends SubsystemBase {
     hood.setControl(m_motmag.withPosition(hoodPosition)); //was position
   }
 
-  public void changeShooterUp() {
-    shooterPower += 0.05;
-  }
-  public void changeShooterDown() {
-    shooterPower -= 0.05;
-  }
+  // public void changeShooterUp() {
+  //   shooterPower += 0.025;
+  // }
+  // public void changeShooterDown() {
+  //   shooterPower -= 0.025;
+  // }
 
-  public void changeHoodUp() {
-    hoodPosition += 0.05;
-    hood.setControl(m_motmag.withPosition(hoodPosition));
+  // public void changeHoodUp() {
+  //   hoodPosition += 0.05;
+  //   hood.setControl(m_motmag.withPosition(hoodPosition));
 
-  }
-  public void changeHoodDown() {
-    hoodPosition -= 0.05;
-    hood.setControl(m_motmag.withPosition(hoodPosition));
-  }
+  // }
+  // public void changeHoodDown() {
+  //   hoodPosition -= 0.05;
+  //   hood.setControl(m_motmag.withPosition(hoodPosition));
+  // }
 
   @Override
   public void periodic() {
     System.out.println("hood position " + hoodPosition);
     System.out.println("shooter power" + shooterPower);
     // This method will be called once per scheduler run
+    hoodPosition = (Constants.distToGoal * -0.5302696) - 0.0697538;
+    shooterPower = (Constants.distToGoal * 0.0777909) + 0.390793;
+    //setHood();
+    //shoot();
   }
 }
 

@@ -86,13 +86,13 @@ public class RobotContainer {
         // joystick.rightStick().whileTrue(new InstantCommand(() -> intake.hopper(-0.5, 0.5)));
         // joystick.rightStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
 
-        //MANUAL SHOOTER HOOD
-        joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
-        joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        // //MANUAL SHOOTER HOOD
+        // joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        // joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
-        //MANUAL SHOOTER POWER
-        joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
-        joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+        // //MANUAL SHOOTER POWER
+        // joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        // joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
@@ -124,5 +124,9 @@ public class RobotContainer {
             // Finally idle for the rest of auton
             drivetrain.applyRequest(() -> idle)
         );
+    }
+
+    public CommandSwerveDrivetrain getDrivetrain() {
+        return drivetrain;
     }
 }

@@ -114,14 +114,16 @@ public class Turret extends SubsystemBase {
   Rotation2d robotTargetAngle; 
 
   Translation2d goalLocation = new Translation2d(goalX, goalY);
-  Translation2d targetVec = goalLocation;
-  double dist;
+  Translation2d targetVec;
+  Translation2d vRobotPose;
+  double dist, doubleDistance;
 
   double thetaX, thetaY;
   double toDegree;
 
   double timeOffset;
-  private static final InterpolatingDoubleTreeMap flightTime = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap hoodPosition = new InterpolatingDoubleTreeMap();
+  private static final InterpolatingDoubleTreeMap shooterPower = new InterpolatingDoubleTreeMap();
 
   public final static CommandXboxController driver = new CommandXboxController(0);
   
@@ -144,48 +146,26 @@ public class Turret extends SubsystemBase {
 
     var talonFXConfigs = new TalonFXConfiguration();
 
-    // talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 80;
+    config.CurrentLimits.StatorCurrentLimit = 110;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    Turret.getConfigurator().apply(config);
-
-    var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
-    motionMagicConfigs.MotionMagicAcceleration = 260; // 160 rps/s acceleration (0.5 seconds) //220
-    motionMagicConfigs.MotionMagicJerk = 3200; // 1600 rps/s^2 jerk (0.1 seconds)
-
-    // set slot 0 gains
-    var slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
-    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
-    // PID runs on position
-    slot0Configs.kP = 2.5; //4.8
-    slot0Configs.kI = 0;
-    slot0Configs.kD = 0.1;
-
-    config.Slot0 = slot0Configs;
+    config.MotionMagic.MotionMagicCruiseVelocity = 80; // 80 rps cruise velocity
+    config.MotionMagic.MotionMagicAcceleration = 160; // 160 rps/s acceleration (0.5 seconds)
+    config.MotionMagic.MotionMagicJerk = 1600; // 1600 rps/s^2 jerk (0.1 seconds)
+    config.Slot0 = Constants.slot0Configs;
 
     m_motmag.EnableFOC = true;
-
-
-    Turret.getConfigurator().apply(motionMagicConfigs);
-    Turret.getConfigurator().apply(slot0Configs); 
-
-
-    // turretPos.put(0.0, -0.973633);
-    // turretPos.put(90.0, 2.453125);
-    // turretPos.put(180.0, 5.595215);
-    // turretPos.put(270.0, 9.096680);
-    flightTime.put(1.0, 1.0);
-    flightTime.put(2.0, 1.5);
-    flightTime.put(3.0, 1.75);
-    flightTime.put(4.0, 2.0);
-    flightTime.put(5.0, 2.5);
+  
+    Turret.getConfigurator().apply(config);
+   
+    // flightTime.put(1.0, 1.0);
+    // flightTime.put(2.0, 1.5);
+    // flightTime.put(3.0, 1.75);
+    // flightTime.put(4.0, 2.0);
+    // flightTime.put(5.0, 2.5);
   }
 
   public void rotateTurret(double turretSpeed) {
@@ -262,6 +242,12 @@ public class Turret extends SubsystemBase {
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
     finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -180, 180);
+
+    vRobotPose = new Translation2d(vRobotX, vRobotY);
+    targetVec = goalLocation.minus(vRobotPose);
+    dist = targetVec.getNorm();
+    Constants.distToGoal = dist;
+
 
     //setTurretToAngle(finalTurretAngle);
       //System.out.println("Robot X" + drivetrain.getState().Pose.getX());
