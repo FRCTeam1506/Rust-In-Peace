@@ -12,13 +12,20 @@ public class Constants {
 
     public class turretConstants {
         public static final int turretID = 6;
+        public static final int turretEncoderID = 55;
     }
     public class shooterConstants {
         public static final int shooterLeft = 62;
         public static final int shooterRight = 61;
         public static final int hood = 16;
-        public static final double hoodUpPosition = -3;
-        public static final double hoodDownPosition = -2;
+        public static final double hoodMaxPosition = -3;//set
+        public static final double hoodMinPosition = -1.5;
+
+
+        public static double shooterPower;   
+        public static double hoodPosition;
+        public static double defaultHoodPosition = -0.6;
+
     }
 
     public class intakeConstants {
@@ -27,11 +34,17 @@ public class Constants {
         public static final int intakeID = 60;
         public static final int liftID = 14;
 
-        public static final double loweredIntake = 3.75;
-        public static final double upIntake = 0.25;
+        public static final double loweredIntake = 3.97;
+        public static final double upIntake = 0.302;
     }
     
 
+    public class climberConstants {
+        public static final int climberID = 0; // SET THIS
+        public static double climberUpPosition;
+        public static double climberDownPosition;
+
+    }
 
     public class VisionConstants {
 

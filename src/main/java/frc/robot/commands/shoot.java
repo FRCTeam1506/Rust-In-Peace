@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 
@@ -19,12 +20,12 @@ public class shoot extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-      new InstantCommand(() -> shooter.shoot()), //0.75
+      new InstantCommand(() -> shooter.shoot(0.75)), //0.75
       new WaitCommand(0.25),
       new InstantCommand(() -> intake.hopper(0.15, 0.0)),
       new WaitCommand(0.25),
       new InstantCommand(() -> intake.hopper(0.15,-0.5)),
-      new InstantCommand(() -> shooter.shoot()) //0.5
+      new InstantCommand(() -> shooter.shoot(0.75)) //0.5
     );
   }
 }

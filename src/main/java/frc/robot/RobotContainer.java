@@ -71,28 +71,28 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
-        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.6))));
+        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.75))));
         joystick.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
         joystick.rightTrigger().whileTrue(new shoot(shooter, intake));
 
         joystick.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
 
-        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.setHood(/*Constants.shooterConstants.hoodUpPosition*/)));
-        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.setHood(/*Constants.shooterConstants.hoodDownPosition*/)));
+        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.setHood(Constants.shooterConstants.hoodPosition)));
+        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.setHood(Constants.shooterConstants.defaultHoodPosition)));
 
         // joystick.leftStick().whileTrue(new InstantCommand(() -> intake.hopper(0.5, -0.5)));
         // joystick.leftStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
         // joystick.rightStick().whileTrue(new InstantCommand(() -> intake.hopper(-0.5, 0.5)));
         // joystick.rightStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
 
-        // //MANUAL SHOOTER HOOD
-        // joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
-        // joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        //MANUAL SHOOTER HOOD
+        joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
-        // //MANUAL SHOOTER POWER
-        // joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
-        // joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+        //MANUAL SHOOTER POWER
+        joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.

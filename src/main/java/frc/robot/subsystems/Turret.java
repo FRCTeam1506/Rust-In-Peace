@@ -33,6 +33,7 @@ import frc.robot.Constants.turretConstants;
 import frc.robot.generated.TunerConstants;
 
 public class Turret extends SubsystemBase {
+  
   DigitalInput zeroTurret = new DigitalInput(turretConstants.turretID);
   //public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final CommandSwerveDrivetrain drivetrain; 
@@ -177,7 +178,7 @@ public class Turret extends SubsystemBase {
   }
 
   public void zeroTurret() {
-    Turret.setControl(m_motmag.withPosition(0));
+    Turret.setPosition(0);
   }
 
   public void fixedTurretPosition() {
@@ -247,6 +248,7 @@ public class Turret extends SubsystemBase {
     targetVec = goalLocation.minus(vRobotPose);
     dist = targetVec.getNorm();
     Constants.distToGoal = dist;
+    System.out.println("Dist to goal" + dist);
 
 
     //setTurretToAngle(finalTurretAngle);
