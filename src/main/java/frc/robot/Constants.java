@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class Constants {
 
@@ -34,8 +35,8 @@ public class Constants {
         public static final int intakeID = 60;
         public static final int liftID = 14;
 
-        public static final double loweredIntake = 3.97;
-        public static final double upIntake = 0.302;
+        public static final double loweredIntake = 3.82;
+        public static final double upIntake = 0.144;
     }
     
 

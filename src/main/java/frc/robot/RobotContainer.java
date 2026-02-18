@@ -21,11 +21,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Turret;
 
 public class RobotContainer {
 
-    Intake intake = new Intake();
-    Shooter shooter = new Shooter();
 
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -42,6 +41,13 @@ public class RobotContainer {
     private final CommandXboxController joystick = new CommandXboxController(0);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+
+    //INITIALIZE SUBSYTEMS
+    Turret turret = new Turret(drivetrain);
+    Intake intake = new Intake();
+    Shooter shooter = new Shooter();
+
 
     public RobotContainer() {
         configureBindings();
@@ -71,20 +77,17 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
-        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.75))));
+        //RUN MACROINTAKE
+        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-1))));
         joystick.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
+        //SHOOT COMMAND
         joystick.rightTrigger().whileTrue(new shoot(shooter, intake));
-
         joystick.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
-
-        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.setHood(Constants.shooterConstants.hoodPosition)));
-        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.setHood(Constants.shooterConstants.defaultHoodPosition)));
-
-        // joystick.leftStick().whileTrue(new InstantCommand(() -> intake.hopper(0.5, -0.5)));
-        // joystick.leftStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
-        // joystick.rightStick().whileTrue(new InstantCommand(() -> intake.hopper(-0.5, 0.5)));
-        // joystick.rightStick().whileFalse(new InstantCommand(() -> intake.hopper(0.0, 0.0)));
+    
+        //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
+        joystick.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(true)));
+        joystick.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(false)));
 
         //MANUAL SHOOTER HOOD
         joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
@@ -93,6 +96,10 @@ public class RobotContainer {
         //MANUAL SHOOTER POWER
         joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
         joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+
+        //RUN SHOOTER POWER
+        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.shoot(1.0)));
+        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.shoot(1)));
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.

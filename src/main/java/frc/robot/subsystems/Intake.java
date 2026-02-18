@@ -25,7 +25,7 @@ public class Intake extends SubsystemBase {
   public Intake() {
     var talonFXConfigs = new TalonFXConfiguration();
 
-    // talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    //talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.StatorCurrentLimitEnable = true;

@@ -5,12 +5,15 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.shooterConstants;
@@ -20,40 +23,16 @@ public class Shooter extends SubsystemBase {
   private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
   private TalonFX hood = new TalonFX(shooterConstants.hood);
 
-  double shooterPower, hoodPosition;
+  double shooterPower = 10;
+  double hoodPosition;
 
+  final VelocityVoltage speedControl = new VelocityVoltage(0);
+
+
+  //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
   InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
-  InterpolatingDoubleTreeMap finalShooterPower = new InterpolatingDoubleTreeMap();
-
-
-public class FullShooterParams {
-
-  double rpm;
-  double hoodAngle;
-  double timeOfFlight;
-
-  public FullShooterParams(double rpm, double hoodAngle, double timeOfFlight) {
-    this.rpm = rpm;
-    this.hoodAngle = hoodAngle;
-    this.timeOfFlight = timeOfFlight;
-  }
-}
-
-  // private static final InterpolatingTreeMap<Double, FullShooterParams> SHOOTER_MAP = new InterpolatingTreeMap<Double, FullShooterParams>();
-  // static {
-  //       SHOOTER_MAP.put(1.5, new FullShooterParams(2800.0, 35.0, 0.38));
-  //       SHOOTER_MAP.put(2.0, new FullShooterParams(3100.0, 38.0, 0.45));
-  //       SHOOTER_MAP.put(2.5, new FullShooterParams(3400.0, 42.0, 0.52));
-  //       SHOOTER_MAP.put(3.0, new FullShooterParams(3650.0, 46.0, 0.60));
-  //       SHOOTER_MAP.put(3.5, new FullShooterParams(3900.0, 50.0, 0.68));
-  //       SHOOTER_MAP.put(4.0, new FullShooterParams(4100.0, 54.0, 0.76));
-  //       SHOOTER_MAP.put(4.5, new FullShooterParams(4350.0, 58.0, 0.85));
-  //       SHOOTER_MAP.put(5.0, new FullShooterParams(4550.0, 62.0, 0.94));
-
-  // }
-
-
-
+  InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
+  InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
 
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
@@ -93,6 +72,8 @@ public class FullShooterParams {
 
     hood.getConfigurator().apply(motionMagicConfigs);
     hood.getConfigurator().apply(slot0Configs); 
+    shooterLeft.getConfigurator().apply(slot0Configs);
+    shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
     finalHoodPosition.put(1.524, -0.6);
@@ -101,17 +82,22 @@ public class FullShooterParams {
     finalHoodPosition.put(4.114, -1.3);
     finalHoodPosition.put(4.572, -1.45);
 
-    finalShooterPower.put(1.524, 0.525);
-    finalShooterPower.put(2.4384, 0.575);
-    finalShooterPower.put(3.048, 0.6);
-    finalShooterPower.put(4.114, 0.725);
-    finalShooterPower.put(4.572, 0.75);
+    finalShooterRPS.put(1.524, 0.525);
+    finalShooterRPS.put(2.4384, 0.575);
+    finalShooterRPS.put(3.048, 0.6);
+    finalShooterRPS.put(4.114, 0.725);
+    finalShooterRPS.put(4.572, 0.75);
+
+    //timeOfFlight.put(1.1,1.1);
 
   }
 
   public void shoot(double speed) {
-    shooterLeft.set(shooterPower); //was speed
-    shooterRight.set(shooterPower);
+    //shooterLeft.set(shooterPower); //was speed
+    //shooterRight.set(shooterPower);
+    shooterLeft.setControl(speedControl.withVelocity(shooterPower));
+    shooterRight.setControl(speedControl.withVelocity(shooterPower));
+
   }
   public void stopShooter() {
     shooterLeft.set(0); 
@@ -126,10 +112,10 @@ public class FullShooterParams {
   }
 
   public void changeShooterUp() {
-    shooterPower += 0.025;
+    shooterPower += 1;
   }
   public void changeShooterDown() {
-    shooterPower -= 0.025;
+    shooterPower -= 1;
   }
 
   public void changeHoodUp() {
@@ -147,13 +133,19 @@ public class FullShooterParams {
   }
 
   public void mainShooterPower() {
-    shooterLeft.set(finalShooterPower.get(Constants.distToGoal));
-    shooterRight.set(finalShooterPower.get(Constants.distToGoal));
+    shooterLeft.set(finalShooterRPS.get(Constants.distToGoal));
+    shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
   }
 
   @Override
   public void periodic() {
-    //System.out.println("hood position " + Constants.shooterConstants.hoodPosition);
+    SmartDashboard.putNumber("Shooter RPS ", shooterPower);
+    SmartDashboard.putNumber("Hood Position ", hoodPosition);
+
+
+    
+    //System.out.println("shooter RPS" + shooterPower);
+    //System.out.println("hood position " + hoodPosition);
     //System.out.println("shooter power" + Constants.shooterConstants.shooterPower);
     // This method will be called once per scheduler run
 

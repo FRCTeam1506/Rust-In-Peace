@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Robot;
@@ -221,8 +222,8 @@ public class Turret extends SubsystemBase {
 
   @Override
   public void periodic() {
-
-    //System.out.println("shot mode " + shootMode);
+    SmartDashboard.putNumber("Shoot Mode ", shootMode);
+    SmartDashboard.putNumber("Turret Angle ", finalTurretAngle);
     
     vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * 1) + 0.1;
     vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * 1);
@@ -242,7 +243,7 @@ public class Turret extends SubsystemBase {
     theta = Math.atan2(thetaY, thetaX);
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
-    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -180, 180);
+    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 90);
 
     vRobotPose = new Translation2d(vRobotX, vRobotY);
     targetVec = goalLocation.minus(vRobotPose);
