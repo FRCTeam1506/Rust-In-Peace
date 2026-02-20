@@ -30,9 +30,9 @@ public class Shooter extends SubsystemBase {
 
 
   //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
-  InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
-  InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
-  InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
+  public InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
+  public InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
+  public InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
 
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
@@ -88,7 +88,11 @@ public class Shooter extends SubsystemBase {
     finalShooterRPS.put(4.114, 0.725);
     finalShooterRPS.put(4.572, 0.75);
 
-    //timeOfFlight.put(1.1,1.1);
+    timeOfFlight.put(1.1,1.1);
+    timeOfFlight.put(1.1,1.1);
+    timeOfFlight.put(1.1,1.1);
+    timeOfFlight.put(1.1,1.1);
+    timeOfFlight.put(1.1,1.1);
 
   }
 
@@ -129,11 +133,17 @@ public class Shooter extends SubsystemBase {
   }
 
   public void mainHoodAngle() {
-    hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMinPosition) {
+      hood.setControl(m_motmag.withPosition(shooterConstants.hoodMinPosition));
+    } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMaxPosition) {
+      hood.setControl(m_motmag.withPosition(shooterConstants.hoodMaxPosition));
+    } else {
+      hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+    }
   }
 
   public void mainShooterPower() {
-    shooterLeft.set(finalShooterRPS.get(Constants.distToGoal));
+    shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
     shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
   }
 
@@ -141,6 +151,7 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Shooter RPS ", shooterPower);
     SmartDashboard.putNumber("Hood Position ", hoodPosition);
+    Constants.timeOfFlight = timeOfFlight.get(Constants.distToGoal);
 
 
     

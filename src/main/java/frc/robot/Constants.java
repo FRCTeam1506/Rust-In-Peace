@@ -8,6 +8,8 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class Constants {
 
+    public static double timeOfFlight;
+
     public static double distToGoal;
     public static final Slot0Configs slot0Configs = new Slot0Configs().withKS(0.24).withKV(0.12).withKP(4.8).withKI(0).withKD(0.1);
 
