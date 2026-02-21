@@ -8,23 +8,39 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.752838788529546,
-        "y": 7.4572753209700435
+        "x": 3.133352353780314,
+        "y": 7.431398002853067
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.040827389443652,
+        "x": 2.693437945791726,
+        "y": 7.4572753209700435
+      },
+      "prevControl": {
+        "x": 2.348657458565489,
+        "y": 7.474496216492546
+      },
+      "nextControl": {
+        "x": 3.0382184330179633,
+        "y": 7.440054425447541
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.041,
         "y": 7.340827389443652
       },
       "prevControl": {
-        "x": 6.152959533297926,
+        "x": 6.1531321438542745,
         "y": 7.404246522025491
       },
       "nextControl": {
-        "x": 7.7653922967189715,
+        "x": 7.76556490727532,
         "y": 7.2890727532097
       },
       "isLocked": false,
@@ -46,7 +62,7 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.5,
+      "waypointRelativePos": 1.0,
       "rotationDegrees": 0.0
     }
   ],
@@ -55,7 +71,13 @@
   "eventMarkers": [
     {
       "name": "Run Shooter",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Stop Shooter",
+      "waypointRelativePos": 1.3797399783315187,
       "endWaypointRelativePos": null,
       "command": null
     }

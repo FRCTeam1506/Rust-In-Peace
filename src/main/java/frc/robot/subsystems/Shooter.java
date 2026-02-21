@@ -101,12 +101,13 @@ public class Shooter extends SubsystemBase {
     //shooterRight.set(shooterPower);
     shooterLeft.setControl(speedControl.withVelocity(shooterPower));
     shooterRight.setControl(speedControl.withVelocity(shooterPower));
-
   }
+
   public void stopShooter() {
     shooterLeft.set(0); 
     shooterRight.set(0);
   }
+
   public void hood (double speed) {
     hood.set(speed);
   }
@@ -145,6 +146,28 @@ public class Shooter extends SubsystemBase {
   public void mainShooterPower() {
     shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
     shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
+  }
+
+  public double calculateTimeOfFlight(double distanceMeters, double shooterRPS, double hoodAngleDegrees) {
+    double wheelDiameterMeters = 0.1; //SET THIS TO SHOOTER WHEEL DIAMETER IN METERS
+    double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
+
+    double wheelSurfaceSpeed = shooterRPS * (wheelDiameterMeters * Math.PI);
+    double exitVelocity = wheelSurfaceSpeed * kSlip;
+
+    double hoodAngleRadians = Math.toRadians(hoodAngleDegrees);
+    double vX = exitVelocity * Math.cos(hoodAngleRadians);
+
+    double tof;
+    if(vX <= 0) {
+      tof = 0;
+    }
+    else {
+    tof = distanceMeters/vX;
+    }
+
+    return tof;
+
   }
 
   @Override

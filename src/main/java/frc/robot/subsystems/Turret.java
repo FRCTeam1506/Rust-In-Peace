@@ -225,8 +225,10 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     SmartDashboard.putNumber("Turret Angle ", finalTurretAngle);
     
-    vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * 1) + 0.1;
-    vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * 1);
+    // vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight) + 0.1;
+    // vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight);
+    vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight);
+    vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight);
 
     robotPose = drivetrain.getState().Pose;
     robotPoseX = drivetrain.getState().Pose.getX();
@@ -324,16 +326,16 @@ public class Turret extends SubsystemBase {
     } else if (shootMode < 0) {
       shootMode = 0;
     }
+    SmartDashboard.putNumber("ShootMode: ", shootMode);
+
     //System.out.println("shoot mode:" + shootMode);
     // if (Turret.getPosition().getValueAsDouble() > 6.5 || Turret.getPosition().getValueAsDouble() < -6.5) {
     //   Turret.set(0);
     // }
     //System.out.println("Zero" + zeroTurret.get());
     if (zeroTurret.get() == false) {
-      System.out.println("false");
+      SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
       zeroTurret();
-
-
     }
   }
 }

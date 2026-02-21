@@ -15,11 +15,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.intakeConstants;
 import frc.robot.commands.shoot;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
@@ -30,6 +32,7 @@ public class Autos {
     static Intake intake;
     static Shooter shooter;
     static Turret turret;
+    static Climber climber;
     static CommandSwerveDrivetrain drivetrain;
 
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
@@ -44,12 +47,15 @@ public class Autos {
     }
 
     public void makeNamedCommands(){
-        NamedCommands.registerCommand("Run Shooter ", new shoot(shooter, intake));
+        NamedCommands.registerCommand("Start Shooter ", new shoot(shooter, intake));
+        NamedCommands.registerCommand("Stop Shooter ", new InstantCommand(() -> shooter.stopShooter()));
+        //NamedCommands.registerCommand("Continuous Shooter", new RunCommand(null, null))
         // NamedCommands.registerCommand("Run Intake ", new ParallelDeadlineGroup(new WaitCommand(1.5), new InstantCommand( () -> intake.runIntake(0.5))));
         NamedCommands.registerCommand("Run Intake ", new InstantCommand( () -> intake.runIntake(0.5)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.loweredIntake))));
         NamedCommands.registerCommand("Stop Intake ", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.upIntake))));
-
         //NamedCommands.registerCommand("ZeroGyro", drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).withTimeout(0.05));
+        NamedCommands.registerCommand("Climber Up ", new InstantCommand(() -> climber.climberUp()));
+        NamedCommands.registerCommand("Climber Down ", new InstantCommand(() -> climber.climberDown()));
 
 
     }

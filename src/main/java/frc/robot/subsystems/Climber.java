@@ -10,6 +10,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.climberConstants;
 
 public class Climber extends SubsystemBase {
@@ -51,6 +52,15 @@ public class Climber extends SubsystemBase {
   public void runClimber (double power) {
     climber.set(power);
   } 
+
+  public void climberUp () {
+    climber.setControl(m_motmag.withPosition(Constants.climberConstants.climberUpPosition));
+  }
+
+  public void climberDown () {
+    climber.setControl(m_motmag.withPosition(Constants.climberConstants.climberDownPosition));
+
+  }
 
   @Override
   public void periodic() {

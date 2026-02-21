@@ -4,11 +4,11 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class Constants {
 
     public static double timeOfFlight;
+
 
     public static double distToGoal;
     public static final Slot0Configs slot0Configs = new Slot0Configs().withKS(0.24).withKV(0.12).withKP(4.8).withKI(0).withKD(0.1);
@@ -23,7 +23,9 @@ public class Constants {
         public static final int hood = 16;
         public static final double hoodMaxPosition = -3;//set
         public static final double hoodMinPosition = -1.5;
-
+        public static final double wheelDiameterMeters = 0.0762;
+        public static final double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
+        
 
         public static double shooterPower;   
         public static double hoodPosition;
