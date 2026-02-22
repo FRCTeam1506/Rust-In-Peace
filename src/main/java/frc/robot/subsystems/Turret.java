@@ -224,6 +224,8 @@ public class Turret extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     SmartDashboard.putNumber("Turret Angle ", finalTurretAngle);
+    SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
+
     
     // vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight) + 0.1;
     // vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight);
@@ -334,7 +336,6 @@ public class Turret extends SubsystemBase {
     // }
     //System.out.println("Zero" + zeroTurret.get());
     if (zeroTurret.get() == false) {
-      SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
       zeroTurret();
     }
   }

@@ -38,7 +38,8 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController driver = new CommandXboxController(0);
+    private final CommandXboxController operator = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -59,9 +60,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -72,44 +73,50 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        joystick.y().whileTrue(drivetrain.applyRequest(() -> brake));
-        joystick.x().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        driver.y().whileTrue(drivetrain.applyRequest(() -> brake));
+        driver.x().whileTrue(drivetrain.applyRequest(() ->
+            point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
         ));
 
+
+
         //RUN MACROINTAKE
-        joystick.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-1))));
-        joystick.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        driver.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-1))));
+        driver.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
         //SHOOT COMMAND
-        joystick.rightTrigger().whileTrue(new shoot(shooter, intake));
-        joystick.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
+        driver.rightTrigger().whileTrue(new shoot(shooter, intake));
+        driver.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
     
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
-        joystick.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(true)));
-        joystick.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(false)));
+        driver.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(true)));
+        driver.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(false)));
 
         //MANUAL SHOOTER HOOD
-        joystick.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
-        joystick.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        driver.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        driver.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
         //MANUAL SHOOTER POWER
-        joystick.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
-        joystick.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+        driver.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        driver.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         //RUN SHOOTER POWER
-        joystick.rightBumper().whileTrue(new InstantCommand ( () -> shooter.shoot(1.0)));
-        joystick.rightBumper().whileFalse(new InstantCommand ( () -> shooter.shoot(1)));
+        driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));
+        driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
+
+        driver.b().whileTrue(new InstantCommand ( () -> shooter.manualShooterRPM()));
+        driver.b().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
+
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driver.back().and(driver.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driver.back().and(driver.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driver.start().and(driver.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driver.start().and(driver.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }

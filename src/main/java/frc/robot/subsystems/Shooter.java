@@ -23,10 +23,18 @@ public class Shooter extends SubsystemBase {
   private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
   private TalonFX hood = new TalonFX(shooterConstants.hood);
 
-  double shooterPower = 10;
+  double shooterPower = 50;
   double hoodPosition;
 
-  final VelocityVoltage speedControl = new VelocityVoltage(0);
+  public static double shooterRPS;
+  public static double wheelSurfaceSpeed;
+  public static double exitVelocity;
+  public static double hoodAngleDegrees;
+  public static double hoodAngleRadians;
+  public static double vX;
+  public static double calculatedTOF;
+
+  final VelocityVoltage speedControl = new VelocityVoltage(12);
 
 
   //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
@@ -49,6 +57,8 @@ public class Shooter extends SubsystemBase {
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     hood.getConfigurator().apply(config);
+    
+
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
@@ -57,12 +67,20 @@ public class Shooter extends SubsystemBase {
 
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
+    var slot1Configs = talonFXConfigs.Slot1;
     slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot0Configs.kP = 2.5; //4.8
+    slot0Configs.kP = 5; //2.5
     slot0Configs.kI = 0;
     slot0Configs.kD = 0.1;
+
+    slot1Configs.kS = 0.24; // add 0.24 V to overcome friction
+    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
+    // PID runs on position
+    slot1Configs.kP = 5; //4.8
+    slot1Configs.kI = 0;
+    slot1Configs.kD = 0.1;
 
     config.Slot0 = slot0Configs;
     
@@ -97,8 +115,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void shoot(double speed) {
-    //shooterLeft.set(shooterPower); //was speed
-    //shooterRight.set(shooterPower);
+    //shooterLeft.set(shooterPower/100); //was speed
+    //shooterRight.set(shooterPower/100);
     shooterLeft.setControl(speedControl.withVelocity(shooterPower));
     shooterRight.setControl(speedControl.withVelocity(shooterPower));
   }
@@ -106,6 +124,16 @@ public class Shooter extends SubsystemBase {
   public void stopShooter() {
     shooterLeft.set(0); 
     shooterRight.set(0);
+  }
+
+  public void manualShooterSPEED() {
+    shooterLeft.set(shooterPower/100);
+    shooterRight.set(shooterPower/100);
+  }
+
+  public void manualShooterRPM() {
+    shooterLeft.setControl(speedControl.withVelocity(shooterPower));
+    shooterRight.setControl(speedControl.withVelocity(shooterPower));
   }
 
   public void hood (double speed) {
@@ -145,35 +173,41 @@ public class Shooter extends SubsystemBase {
 
   public void mainShooterPower() {
     shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
+    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    //shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
+  }
+
+  public double hoodAngleDegrees() {
+    return hoodAngleDegrees;
   }
 
   public double calculateTimeOfFlight(double distanceMeters, double shooterRPS, double hoodAngleDegrees) {
-    double wheelDiameterMeters = 0.1; //SET THIS TO SHOOTER WHEEL DIAMETER IN METERS
-    double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
-
-    double wheelSurfaceSpeed = shooterRPS * (wheelDiameterMeters * Math.PI);
-    double exitVelocity = wheelSurfaceSpeed * kSlip;
-
-    double hoodAngleRadians = Math.toRadians(hoodAngleDegrees);
-    double vX = exitVelocity * Math.cos(hoodAngleRadians);
-
-    double tof;
     if(vX <= 0) {
-      tof = 0;
+      calculatedTOF = 0;
     }
     else {
-    tof = distanceMeters/vX;
+    calculatedTOF = distanceMeters/vX;
     }
 
-    return tof;
-
+    return calculatedTOF;
   }
 
   @Override
   public void periodic() {
+    shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
+
     SmartDashboard.putNumber("Shooter RPS ", shooterPower);
+    SmartDashboard.putNumber("Real Shooter RPS ", shooterRPS);
     SmartDashboard.putNumber("Hood Position ", hoodPosition);
+
+
+    // SmartDashboard.putNumber("Shooter RPS ", shooterRight.getvelo);
+
+    wheelSurfaceSpeed = shooterRPS * (Constants.shooterConstants.wheelDiameterMeters * Math.PI);
+    exitVelocity = wheelSurfaceSpeed * Constants.shooterConstants.kSlip;
+    hoodAngleRadians = Math.toRadians(hoodAngleDegrees);
+    vX = exitVelocity * Math.cos(hoodAngleRadians);
+
     Constants.timeOfFlight = timeOfFlight.get(Constants.distToGoal);
 
 

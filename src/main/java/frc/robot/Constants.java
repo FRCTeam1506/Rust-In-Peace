@@ -27,7 +27,7 @@ public class Constants {
         public static final double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
         
 
-        public static double shooterPower;   
+        public static double shooterPower;  
         public static double hoodPosition;
         public static double defaultHoodPosition = -0.6;
 
@@ -39,8 +39,8 @@ public class Constants {
         public static final int intakeID = 60;
         public static final int liftID = 14;
 
-        public static final double loweredIntake = 3.82;
-        public static final double upIntake = 0.144;
+        public static final double loweredIntake = 3.822754;
+        public static final double upIntake = 0.22;
     }
     
 
@@ -48,6 +48,12 @@ public class Constants {
         public static final int climberID = 0; // SET THIS
         public static double climberUpPosition;
         public static double climberDownPosition;
+
+    }
+
+    public class calculatedShotConstants {
+        public static double tX; //Hub X
+        public static double tY; //Hub Y
 
     }
 
