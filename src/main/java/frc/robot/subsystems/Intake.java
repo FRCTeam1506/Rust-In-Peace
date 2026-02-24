@@ -84,6 +84,11 @@ public class Intake extends SubsystemBase {
     intake.set(0);
   }
 
+  public void zeroIntake() {
+    intakeLift.setPosition(0);
+
+  }
+
 
   @Override
   public void periodic() {

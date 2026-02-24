@@ -8,8 +8,11 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -48,9 +51,31 @@ public class RobotContainer {
     Turret turret = new Turret(drivetrain);
     Intake intake = new Intake();
     Shooter shooter = new Shooter();
+    Autos autos = new Autos(drivetrain, intake, shooter, turret);
+
+
+
+    private final SendableChooser<Command> autoChooser;
+    private SendableChooser<Command> autoChooserManual;
+    public static SendableChooser<String> lazyAuto2000 = new SendableChooser<String>();
+    public static SendableChooser<Integer> autoDriveLocation = new SendableChooser<Integer>();
 
 
     public RobotContainer() {
+        autos.makeNamedCommands();
+    
+        autoChooserManual = new SendableChooser<Command>();
+        autoChooserManual = autos.configureChooser(autoChooserManual);
+
+        autoChooser = AutoBuilder.buildAutoChooser("Left Auto Path Only");
+        SmartDashboard.putData("Auto Mode", autoChooser);
+
+        SmartDashboard.putData("lazyAuto2000", lazyAuto2000);
+
+        SmartDashboard.putData("SmartPathfinding", autoDriveLocation); 
+
+        SmartDashboard.putData("Auto Mode 2000", autoChooserManual);
+
         configureBindings();
     }
 
@@ -89,8 +114,8 @@ public class RobotContainer {
         driver.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
     
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
-        driver.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(true)));
-        driver.rightStick().whileTrue(new InstantCommand(() -> turret.shootModeChange(false)));
+        driver.rightStick().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
+        driver.leftStick().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
 
         //MANUAL SHOOTER HOOD
         driver.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
@@ -101,8 +126,10 @@ public class RobotContainer {
         driver.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         //RUN SHOOTER POWER
-        driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));
-        driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
+        // driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));
+        // driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
+
+        driver.rightBumper().onTrue(new InstantCommand(() -> shooter.zeroHood()));
 
         driver.b().whileTrue(new InstantCommand ( () -> shooter.manualShooterRPM()));
         driver.b().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
@@ -121,24 +148,29 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    public Command getAutonomousCommand() {
-        // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            // Then slowly drive forward (away from us) for 5 seconds.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(0.5)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            )
-            .withTimeout(5.0),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+    // public Command getAutonomousCommand() {
+    //     // Simple drive forward auton
+    //     final var idle = new SwerveRequest.Idle();
+    //     return Commands.sequence(
+    //         // Reset our field centric heading to match the robot
+    //         // facing away from our alliance station wall (0 deg).
+    //         drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
+    //         // Then slowly drive forward (away from us) for 5 seconds.
+    //         drivetrain.applyRequest(() ->
+    //             drive.withVelocityX(0.5)
+    //                 .withVelocityY(0)
+    //                 .withRotationalRate(0)
+    //         )
+    //         .withTimeout(5.0),
+    //         // Finally idle for the rest of auton
+    //         drivetrain.applyRequest(() -> idle)
+    //     );
+    // }
+    public Command getAutonomousCommand() { 
+        /* Run the path selected from the auto chooser */
+        return autoChooser.getSelected();
     }
+    
 
     public CommandSwerveDrivetrain getDrivetrain() {
         return drivetrain;

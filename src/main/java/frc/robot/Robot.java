@@ -74,7 +74,7 @@ public class Robot extends TimedRobot {
         // Pose2d pose = new Pose2d(llMeasurement.pose.getX(), llMeasurement.pose.getY(), llMeasurement.pose.getRotation().minus(new Rotation2d(0))); //minus rotation2d(math.pi)
         m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_left.pose, llMeasurement_left.timestampSeconds);
         //System.out.println("left " + llMeasurement_left.pose);
-        System.out.println("heading " + headingDeg);
+        //System.out.println("heading " + headingDeg);
 
         // SmartDashboard.putNumberArray("MT2Result_Center", new double[]{llMeasurement.pose.getX(), llMeasurement.pose.getY()});
       }
@@ -82,7 +82,7 @@ public class Robot extends TimedRobot {
       if (llMeasurement_right != null && llMeasurement_right.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_RIGHT) > 0.33) {
         m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_right.pose, llMeasurement_right.timestampSeconds);
         //System.out.println("right " + llMeasurement_right.pose);
-        System.out.println("heading " + headingDeg);
+        //System.out.println("heading " + headingDeg);
 
       }
     }
@@ -114,6 +114,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    m_robotContainer.intake.zeroIntake();
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }

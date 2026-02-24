@@ -47,23 +47,30 @@ public class Autos {
     }
 
     public void makeNamedCommands(){
-        NamedCommands.registerCommand("Start Shooter ", new shoot(shooter, intake));
-        NamedCommands.registerCommand("Stop Shooter ", new InstantCommand(() -> shooter.stopShooter()));
+        NamedCommands.registerCommand("Run Shooter", new shoot(shooter, intake));
+        NamedCommands.registerCommand("Stop Shooter", new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
         //NamedCommands.registerCommand("Continuous Shooter", new RunCommand(null, null))
         // NamedCommands.registerCommand("Run Intake ", new ParallelDeadlineGroup(new WaitCommand(1.5), new InstantCommand( () -> intake.runIntake(0.5))));
-        NamedCommands.registerCommand("Run Intake ", new InstantCommand( () -> intake.runIntake(0.5)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.loweredIntake))));
-        NamedCommands.registerCommand("Stop Intake ", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.upIntake))));
+        NamedCommands.registerCommand("Run Intake", new InstantCommand( () -> intake.runIntake(0.5)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.loweredIntake))));
+        NamedCommands.registerCommand("Stop Intake", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.upIntake))));
         //NamedCommands.registerCommand("ZeroGyro", drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).withTimeout(0.05));
-        NamedCommands.registerCommand("Climber Up ", new InstantCommand(() -> climber.climberUp()));
-        NamedCommands.registerCommand("Climber Down ", new InstantCommand(() -> climber.climberDown()));
+        NamedCommands.registerCommand("Climber Up", new InstantCommand(() -> climber.climberUp()));
+        NamedCommands.registerCommand("Climber Down", new InstantCommand(() -> climber.climberDown()));
+
+        NamedCommands.registerCommand("Shoot Mode 4", new InstantCommand(() -> Turret.shootMode = 1));
+
 
 
     }
 
     public SendableChooser<Command> configureChooser(SendableChooser<Command> chooser){
-        chooser.addOption("Left", new PathPlannerAuto("Left"));
+        chooser.addOption("Left Auto", new PathPlannerAuto("Left Auto"));
+        chooser.addOption("Left Auto Path Only", new PathPlannerAuto("Left Auto Path Only"));
+
         return chooser;
     }
+
+    
 
 
 }

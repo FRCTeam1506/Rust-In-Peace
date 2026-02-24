@@ -71,16 +71,16 @@ public class Shooter extends SubsystemBase {
     slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot0Configs.kP = 5; //2.5
+    slot0Configs.kP = 2.5; //2.5
     slot0Configs.kI = 0;
-    slot0Configs.kD = 0.1;
+    slot0Configs.kD = 0.25;
 
     slot1Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot1Configs.kP = 5; //4.8
+    slot1Configs.kP = 3; //4.8
     slot1Configs.kI = 0;
-    slot1Configs.kD = 0.1;
+    slot1Configs.kD = 1;
 
     config.Slot0 = slot0Configs;
     
@@ -94,24 +94,22 @@ public class Shooter extends SubsystemBase {
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
-    finalHoodPosition.put(1.524, -0.6);
-    finalHoodPosition.put(2.4384, -0.6);
-    finalHoodPosition.put(3.048, -1.15);
-    finalHoodPosition.put(4.114, -1.3);
-    finalHoodPosition.put(4.572, -1.45);
+    finalHoodPosition.put(1.57, 0.0);
+    finalHoodPosition.put(2.16, -0.2);
+    finalHoodPosition.put(2.64, -0.45);
+    finalHoodPosition.put(4.09, -1.7);
+    //finalHoodPosition.put(4.572, -1.45);
 
-    finalShooterRPS.put(1.524, 0.525);
-    finalShooterRPS.put(2.4384, 0.575);
-    finalShooterRPS.put(3.048, 0.6);
-    finalShooterRPS.put(4.114, 0.725);
-    finalShooterRPS.put(4.572, 0.75);
+    finalShooterRPS.put(1.57, 50.0);
+    finalShooterRPS.put(2.16, 60.0);
+    finalShooterRPS.put(2.64, 67.0);
+    finalShooterRPS.put(4.09, 94.0);
+    //finalShooterRPS.put(4.572, 0.75);
 
-    timeOfFlight.put(1.1,1.1);
-    timeOfFlight.put(1.1,1.1);
-    timeOfFlight.put(1.1,1.1);
-    timeOfFlight.put(1.1,1.1);
-    timeOfFlight.put(1.1,1.1);
-
+    timeOfFlight.put(1.57, 1.0);
+    timeOfFlight.put(2.16, 1.1);
+    timeOfFlight.put(2.64, 1.35);
+    timeOfFlight.put(4.09, 1.6);
   }
 
   public void shoot(double speed) {
@@ -129,6 +127,10 @@ public class Shooter extends SubsystemBase {
   public void manualShooterSPEED() {
     shooterLeft.set(shooterPower/100);
     shooterRight.set(shooterPower/100);
+  }
+
+  public void zeroHood() {
+    hood.setPosition(0);
   }
 
   public void manualShooterRPM() {
@@ -232,6 +234,8 @@ public class Shooter extends SubsystemBase {
     
     // setHood(shooterConstants.hoodPosition);
     // shoot(shooterConstants.shooterPower);
+    mainHoodAngle();
+    // mainShooterPower();
   }
 }
 

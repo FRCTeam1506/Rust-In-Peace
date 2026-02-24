@@ -5,15 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "Shoot Mode 4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Run Shooter"
+            "pathName": "LeftFirst"
           }
         },
         {
@@ -25,32 +19,8 @@
                 "data": {
                   "waitTime": 3.0
                 }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run Shooter"
-                }
               }
             ]
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stop Shooter"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "LeftFirst"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Run Intake"
           }
         },
         {
@@ -61,12 +31,6 @@
                 "type": "path",
                 "data": {
                   "pathName": "LeftSecond"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run Intake"
                 }
               }
             ]
@@ -86,18 +50,6 @@
                 "type": "wait",
                 "data": {
                   "waitTime": 3.0
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Run Shooter"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Stop Intake"
                 }
               }
             ]
