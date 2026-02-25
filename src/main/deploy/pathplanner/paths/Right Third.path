@@ -16,38 +16,56 @@
     },
     {
       "anchor": {
-        "x": 2.4217261055634807,
-        "y": 0.7421112696148362
+        "x": 2.6422289156626504,
+        "y": 0.7457590361445796
       },
       "prevControl": {
-        "x": 2.6287446504981595,
-        "y": 0.4445221112627018
+        "x": 3.057481927710843,
+        "y": 0.4616385542168678
       },
       "nextControl": {
-        "x": 2.166946095355587,
-        "y": 1.1083575342991856
+        "x": 2.435902100350192,
+        "y": 0.886930015042578
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 2.1888302425095727,
-        "y": 2.0230385163982225
+        "x": 2.019349397590361,
+        "y": 1.6090481927710845
       },
       "prevControl": {
-        "x": 2.1888302425095727,
-        "y": 0.9620684736022167
+        "x": 2.205120481927711,
+        "y": 1.2375060240963864
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.7026269702276663,
+      "rotationDegrees": 90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Stop Intake",
+      "waypointRelativePos": 0.4,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
+      "name": "Run Shooter",
+      "waypointRelativePos": 0.7764227642276472,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
@@ -58,10 +76,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": "Right Basic",
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 90.0

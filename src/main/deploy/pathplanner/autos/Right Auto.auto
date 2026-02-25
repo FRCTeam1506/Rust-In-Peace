@@ -26,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right Basic First"
+            "pathName": "Right First"
           }
         },
         {
@@ -42,7 +42,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "Right Basic Second"
+                  "pathName": "Right Second"
                 }
               },
               {
@@ -57,7 +57,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Right Basic Third"
+            "pathName": "Right Third"
           }
         },
         {
@@ -77,6 +77,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Shooter"
           }
         }
       ]

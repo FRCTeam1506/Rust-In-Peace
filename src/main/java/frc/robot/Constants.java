@@ -46,8 +46,8 @@ public class Constants {
         public static final int shooterLeft = 62;
         public static final int shooterRight = 61;
         public static final int hood = 16;
-        public static final double hoodMaxPosition = -3;//set
-        public static final double hoodMinPosition = -1.5;
+        public static final double hoodMaxPosition = 0;//set
+        public static final double hoodMinPosition = -2.43;
         public static final double wheelDiameterMeters = 0.0762;
         public static final double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
         

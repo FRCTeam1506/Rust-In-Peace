@@ -42,11 +42,15 @@ public class Shooter extends SubsystemBase {
   public InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
 
+
+  double mainShooterRPS, mainHoodAngle;
+
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Shooter() {
 
     var talonFXConfigs = new TalonFXConfiguration();
+    var hoodConfigs = new TalonFXConfiguration();
 
     // talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
@@ -67,20 +71,24 @@ public class Shooter extends SubsystemBase {
 
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
-    var slot1Configs = talonFXConfigs.Slot1;
+    var slot0hoodConfigs = hoodConfigs.Slot0;
+    slot0hoodConfigs.kS = 0.24; // add 0.24 V to overcome friction
+    slot0hoodConfigs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
+    // PID runs on position
+    slot0hoodConfigs.kP = 2.5; //2.5
+    slot0hoodConfigs.kI = 0;
+    slot0hoodConfigs.kD = 0.25;
+
+    slot0hoodConfigs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
+
     slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot0Configs.kP = 2.5; //2.5
+    slot0Configs.kP = 100; //2.5
     slot0Configs.kI = 0;
     slot0Configs.kD = 0.25;
 
-    slot1Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
-    // PID runs on position
-    slot1Configs.kP = 3; //4.8
-    slot1Configs.kI = 0;
-    slot1Configs.kD = 1;
 
     config.Slot0 = slot0Configs;
     
@@ -89,7 +97,7 @@ public class Shooter extends SubsystemBase {
 
 
     hood.getConfigurator().apply(motionMagicConfigs);
-    hood.getConfigurator().apply(slot0Configs); 
+    hood.getConfigurator().apply(slot0hoodConfigs); 
     shooterLeft.getConfigurator().apply(slot0Configs);
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
@@ -158,24 +166,31 @@ public class Shooter extends SubsystemBase {
     hood.setControl(m_motmag.withPosition(hoodPosition));
 
   }
+
+  public void hoodLow() {
+      hood.setControl(m_motmag.withPosition(Constants.shooterConstants.hoodMinPosition));
+  }
   public void changeHoodDown() {
     hoodPosition -= 0.05;
     hood.setControl(m_motmag.withPosition(hoodPosition));
   }
 
   public void mainHoodAngle() {
-    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMinPosition) {
+    if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
       hood.setControl(m_motmag.withPosition(shooterConstants.hoodMinPosition));
-    } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMaxPosition) {
+    } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) {
       hood.setControl(m_motmag.withPosition(shooterConstants.hoodMaxPosition));
     } else {
-      hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+      //hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+      hood.setControl(m_motmag.withPosition(mainHoodAngle));
     }
   }
 
   public void mainShooterPower() {
-    shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    // shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    // shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    shooterLeft.setControl(speedControl.withVelocity(mainShooterRPS));
+    shooterRight.setControl(speedControl.withVelocity(mainShooterRPS));
     //shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
   }
 
@@ -198,9 +213,16 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
 
+
+    mainHoodAngle = finalHoodPosition.get(Constants.distToGoal);
+    mainShooterRPS = finalShooterRPS.get(Constants.distToGoal);
+
     SmartDashboard.putNumber("Shooter RPS ", shooterPower);
-    SmartDashboard.putNumber("Real Shooter RPS ", shooterRPS);
-    SmartDashboard.putNumber("Hood Position ", hoodPosition);
+    SmartDashboard.putNumber("Real Shooter RPS ", shooterLeft.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Hood Position ", hood.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
+    SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
+
 
 
     // SmartDashboard.putNumber("Shooter RPS ", shooterRight.getvelo);
@@ -234,6 +256,8 @@ public class Shooter extends SubsystemBase {
     
     // setHood(shooterConstants.hoodPosition);
     // shoot(shooterConstants.shooterPower);
+
+
     mainHoodAngle();
     // mainShooterPower();
   }

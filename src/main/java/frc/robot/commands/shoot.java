@@ -25,7 +25,7 @@ public class shoot extends SequentialCommandGroup {
       new WaitCommand(1),
       new InstantCommand(() -> intake.hopper(0.15, 0.0)),
       new WaitCommand(0.25),
-      new InstantCommand(() -> intake.hopper(0.1,-0.7)),
+      new InstantCommand(() -> intake.hopper(0.5,-0.85)),
       // new InstantCommand(() -> shooter.shoot(0.75)) //0.5
       new InstantCommand(() -> shooter.mainShooterPower())
     );

@@ -57,7 +57,7 @@ public class Turret extends SubsystemBase {
 
   boolean red;
   Optional<Alliance> alliance = DriverStation.getAlliance();
-  public static int shootMode = 0; //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
+  public static int shootMode = 4; //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
 
 
   //Variables for getting angle to goal.
@@ -231,8 +231,8 @@ public class Turret extends SubsystemBase {
     
     // vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight) + 0.1;
     // vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight);
-    vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight) + 0.2;
-    vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight) + 0.2;
+    vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*+ 0.2*/;
+    vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*- 0.2*/; //Added (Constants.timeOfFlight * 1.2) because the offset while driving wasn't enough
 
     robotPose = drivetrain.getState().Pose;
     robotPoseX = drivetrain.getState().Pose.getX();
@@ -262,6 +262,9 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
     SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
+    
+    SmartDashboard.putBoolean("Zero Turret", zeroTurret.get());
+
       //System.out.println("Robot X" + drivetrain.getState().Pose.getX());
 
     

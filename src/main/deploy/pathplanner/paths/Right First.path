@@ -20,15 +20,20 @@
         "y": 1.2984736091298146
       },
       "prevControl": {
-        "x": 7.118459343794579,
-        "y": 0.71623395149786
+        "x": 7.1335180722891565,
+        "y": 0.24308433734939694
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "RightBasicFirst"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.42977232924693604,
+      "rotationDegrees": -90.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -45,10 +50,10 @@
     "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Right Basic",
+  "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -90.0
   },
   "useDefaultConstraints": true
 }

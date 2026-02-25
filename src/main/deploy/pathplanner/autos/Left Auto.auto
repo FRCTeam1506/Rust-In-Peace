@@ -7,7 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot Mode 4"
+            "name": "Shoot Mode 1"
           }
         },
         {
@@ -42,9 +42,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "deadline",
           "data": {
-            "pathName": "LeftFirst"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "LeftFirst"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Hood Low"
+                }
+              }
+            ]
           }
         },
         {
@@ -101,6 +114,12 @@
                 }
               }
             ]
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Shooter"
           }
         }
       ]
