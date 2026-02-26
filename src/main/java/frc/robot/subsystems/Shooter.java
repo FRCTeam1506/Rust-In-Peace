@@ -189,8 +189,8 @@ public class Shooter extends SubsystemBase {
   public void mainShooterPower() {
     // shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
     // shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    shooterLeft.setControl(speedControl.withVelocity(mainShooterRPS));
-    shooterRight.setControl(speedControl.withVelocity(mainShooterRPS));
+    shooterLeft.setControl(speedControl.withVelocity(shooterPower)); //CONSIDER ADDING A CONSTANT TO ALL OF THESE VALUES TO COMPENSATE FOR THE HEAVIER WEIGHT? 
+    shooterRight.setControl(speedControl.withVelocity(shooterPower));
     //shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
   }
 

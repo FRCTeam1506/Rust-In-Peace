@@ -56,6 +56,9 @@ public class Constants {
         public static double hoodPosition;
         public static double defaultHoodPosition = -0.6;
 
+        public static final double cornerShotRPM = 0;
+        public static final double cornerShotHoodAngle = 0;
+        public static final double cornerShotTurretAngle = 0; //consider doing position to make it easier, just for the corner shot
     }
 
     public class intakeConstants {

@@ -35,7 +35,7 @@ import frc.robot.generated.TunerConstants;
 
 public class Turret extends SubsystemBase {
   
-  DigitalInput zeroTurret = new DigitalInput(turretConstants.turretID);
+  DigitalInput zeroTurret = new DigitalInput(0); //CHECK THIS DIO PORT! IT MIGHT BE WRONG!
   //public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final CommandSwerveDrivetrain drivetrain; 
 
@@ -76,7 +76,7 @@ public class Turret extends SubsystemBase {
 
   //MAILING
   //RED LINE
-  final double redLine = 12.6;
+  final double redLine = 11.5; //used to be 12.6, made it 11.5 for more accurate zone of when we want to do mailing funciton
   final double middleY = 4;
   final double blueLine = 4.1;
 
@@ -131,7 +131,7 @@ public class Turret extends SubsystemBase {
   public final static CommandXboxController driver = new CommandXboxController(0);
   
   /** Creates a new Turret. */
-    private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID);
+    private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID); 
     final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
     
     // private Encoder encoder = new Encoder(0, 0);
@@ -173,6 +173,10 @@ public class Turret extends SubsystemBase {
 
   public void rotateTurret(double turretSpeed) {
     Turret.set(turretSpeed);
+  }
+
+  public void stopTurret() {
+    Turret.set(0);
   }
 
   public void setTurretPos(double pos) {
@@ -226,6 +230,7 @@ public class Turret extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     SmartDashboard.putNumber("Turret Angle ", finalTurretAngle);
+    SmartDashboard.putNumber("Turret Position", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
 
     
@@ -249,7 +254,7 @@ public class Turret extends SubsystemBase {
     theta = Math.atan2(thetaY, thetaX);
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
-    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -85, 85);
+    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 85);
 
     vRobotPose = new Translation2d(vRobotX, vRobotY);
     targetVec = goalLocation.minus(vRobotPose);
@@ -258,7 +263,7 @@ public class Turret extends SubsystemBase {
     //System.out.println("Dist to goal" + dist);
 
 
-    setTurretToAngle(finalTurretAngle);
+    //setTurretToAngle(finalTurretAngle);
     SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
     SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);

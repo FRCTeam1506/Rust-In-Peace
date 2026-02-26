@@ -104,6 +104,13 @@ public class RobotContainer {
         ));
 
 
+        //MANUAL TURRET
+        driver.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
+        driver.x().whileFalse(new InstantCommand(() -> turret.stopTurret()));
+
+        driver.y().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.1)));
+        driver.y().whileFalse(new InstantCommand(() -> turret.stopTurret()));
+        
 
         //RUN MACROINTAKE
         driver.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-1))));
