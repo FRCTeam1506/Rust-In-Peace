@@ -13,6 +13,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -225,6 +226,42 @@ public class Turret extends SubsystemBase {
     Turret.set(speed);
   }
 
+  /** Convert a desired turret angle (deg, robot-relative, 0 = robot forward) to motor rotations. */
+  private static double turretDegToMotorRot(double turretDeg) {
+    return (turretDeg / 360.0) * Constants.TurretMathConstants.MOTOR_ROT_PER_TURRET_ROT;
+  }
+
+  /**
+   * Aim turret at a FIELD-relative angle.
+   * The turret will automatically subtract robot heading to get robot-relative turret angle.
+   */
+  public void aimFieldAngle(Rotation2d aimFieldAngle) {
+    double robotHeadingDeg = drivetrain.getState().Pose.getRotation().getDegrees();
+    double aimFieldDeg = aimFieldAngle.getDegrees();
+
+    // robot-relative turret command: 0 deg = robot forward
+    double turretDeg = aimFieldDeg - robotHeadingDeg;
+
+    // Wrap to [-180, 180) first (stable), then clamp to your physical range.
+    turretDeg = MathUtil.inputModulus(turretDeg, -180.0, 180.0);
+    turretDeg = MathUtil.clamp(
+        turretDeg,
+        Constants.TurretMathConstants.MIN_TURRET_DEG,
+        Constants.TurretMathConstants.MAX_TURRET_DEG
+    );
+
+  Turret.setControl(m_motmag.withPosition(turretDegToMotorRot(turretDeg)));
+}
+
+  public Translation2d getGoalLocation() {
+    if (red == true) {
+          goalLocation = new Translation2d(goalRedX, goalRedY);
+    } else {
+          goalLocation = new Translation2d(goalBlueX, goalBlueY);
+    }
+    return goalLocation;
+  }
+
 
   @Override
   public void periodic() {
@@ -263,7 +300,7 @@ public class Turret extends SubsystemBase {
     //System.out.println("Dist to goal" + dist);
 
 
-    //setTurretToAngle(finalTurretAngle);
+    setTurretToAngle(finalTurretAngle);
     SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
     SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);

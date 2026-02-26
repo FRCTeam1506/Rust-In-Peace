@@ -18,8 +18,42 @@ public class Constants {
     public static double distToGoal;
     public static final Slot0Configs slot0Configs = new Slot0Configs().withKS(0.24).withKV(0.12).withKP(4.8).withKI(0).withKD(0.1);
 
+    public static class ShotConstants {
+    // Update to 2026 game measurements
+    public static final double TARGET_HEIGHT_M = 1.8288;
+    public static final double SHOOTER_PIVOT_HEIGHT_M = 0.65;
 
-    public class SwerveConstants {
+    // Wheel circumferences in meters (pi * diameter)
+    public static final double CIRC_BOTTOM_M = 0.319; // SET THESE!
+    public static final double CIRC_TOP_M = 0.159;
+
+    // Efficiency scalar: v_ball = v_surface * K_EFF (tune!)
+    public static final double K_EFF = 0.6;
+
+    // Desired entry angle phi (radians)
+    public static final double DESIRED_PHI_RAD = 0.61;
+        }
+
+    public static class TurretMathConstants {
+    public static final double MOTOR_ROT_PER_TURRET_ROT = 13.2;
+
+    public static final double MIN_TURRET_DEG = -85.0;
+    public static final double MAX_TURRET_DEG = 85.0;
+        }
+
+    public static class HoodConstants {
+        // Fill these with measured data: SET THESE!
+        public static final double ANGLE1_DEG = 20.0;
+        public static final double MOTOR_ROT1 = -0.30;
+
+        public static final double ANGLE2_DEG = 50.0;
+        public static final double MOTOR_ROT2 = -1.80;
+
+        public static final double MIN_POS_ROT = shooterConstants.hoodMinPosition; // -2.43
+        public static final double MAX_POS_ROT = shooterConstants.hoodMaxPosition; // 0
+    }
+
+    public static class SwerveConstants {
 
         public static final double driveKP = 1.5;
         public static final double driveKI = 0.15; //0
@@ -42,6 +76,7 @@ public class Constants {
         public static final int turretID = 6;
         public static final int turretEncoderID = 55;
     }
+    
     public class shooterConstants {
         public static final int shooterLeft = 62;
         public static final int shooterRight = 61;
@@ -76,12 +111,6 @@ public class Constants {
         public static final int climberID = 0; // SET THIS
         public static double climberUpPosition;
         public static double climberDownPosition;
-
-    }
-
-    public class calculatedShotConstants {
-        public static double tX; //Hub X
-        public static double tY; //Hub Y
 
     }
 

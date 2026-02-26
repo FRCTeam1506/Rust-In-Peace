@@ -25,6 +25,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Turret;
+import frc.robot.commands.ShootOnTheMove;
+
 
 public class RobotContainer {
 
@@ -103,6 +105,10 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-driver.getLeftY(), -driver.getLeftX()))
         ));
 
+        // add import
+
+        // in configureBindings():
+        driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret));
 
         //MANUAL TURRET
         driver.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
@@ -137,10 +143,6 @@ public class RobotContainer {
         // driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
 
         driver.rightBumper().onTrue(new InstantCommand(() -> shooter.zeroHood()));
-
-        driver.b().whileTrue(new InstantCommand ( () -> shooter.manualShooterRPM()));
-        driver.b().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
-
 
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.

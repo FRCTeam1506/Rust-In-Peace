@@ -61,7 +61,11 @@ public class Autos {
 
         NamedCommands.registerCommand("Hood Low", new InstantCommand(() -> shooter.hoodLow()));
 
-        NamedCommands.registerCommand("Corner Shot Hood", new InstantCommand(() -> shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle)));
+        NamedCommands.registerCommand("Corner Shot", new InstantCommand(() -> {
+            shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle);
+            turret.setTurretToAngle(Constants.shooterConstants.cornerShotTurretAngle);
+            shooter.setShooterRPM(Constants.shooterConstants.cornerShotRPM);
+        }));
 
 
 

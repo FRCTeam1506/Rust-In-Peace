@@ -11,6 +11,7 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -141,9 +142,9 @@ public class Shooter extends SubsystemBase {
     hood.setPosition(0);
   }
 
-  public void manualShooterRPM() {
-    shooterLeft.setControl(speedControl.withVelocity(shooterPower));
-    shooterRight.setControl(speedControl.withVelocity(shooterPower));
+  public void setDifferentShooterRPMs(double bottomRPM, double topRPM) {
+    shooterLeft.setControl(speedControl.withVelocity(bottomRPM/60)); //MAKE SURE THAT BOTTOM IS "LEFT" AND TOP IS "RIGHT" 
+    shooterRight.setControl(speedControl.withVelocity(topRPM/60));
   }
 
   public void hood (double speed) {
@@ -174,6 +175,39 @@ public class Shooter extends SubsystemBase {
     hoodPosition -= 0.05;
     hood.setControl(m_motmag.withPosition(hoodPosition));
   }
+
+
+public static double hoodDegToMotorRot(double angleDeg) {
+  double a1 = Constants.HoodConstants.ANGLE1_DEG;
+  double p1 = Constants.HoodConstants.MOTOR_ROT1;
+  double a2 = Constants.HoodConstants.ANGLE2_DEG;
+  double p2 = Constants.HoodConstants.MOTOR_ROT2;
+
+  // slope: motorRot per degree
+  double rotPerDeg = (p2 - p1) / (a2 - a1);
+
+  // motorRot = p1 + (angle - a1) * slope
+  return p1 + (angleDeg - a1) * rotPerDeg;
+}
+
+public void setShooterRPM(double shooterRPM) 
+  {
+    shooterLeft.setControl(speedControl.withVelocity(shooterRPM));
+    shooterRight.setControl(speedControl.withVelocity(shooterRPM));  
+  }
+
+public void setHoodAngleDegrees(double angleDeg) {
+  double targetRot = hoodDegToMotorRot(angleDeg);
+
+  // Clamp to physical limits
+  targetRot = MathUtil.clamp(
+      targetRot,
+      Constants.HoodConstants.MIN_POS_ROT,
+      Constants.HoodConstants.MAX_POS_ROT
+  );
+
+  hood.setControl(m_motmag.withPosition(targetRot));
+}
 
   public void mainHoodAngle() {
     if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
@@ -261,5 +295,7 @@ public class Shooter extends SubsystemBase {
     mainHoodAngle();
     // mainShooterPower();
   }
+
+  
 }
 
