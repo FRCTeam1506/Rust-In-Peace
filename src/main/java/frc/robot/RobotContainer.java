@@ -108,7 +108,10 @@ public class RobotContainer {
         // add import
 
         // in configureBindings():
-        driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret));
+        driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
+        driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
+
+        //TODO: TOGGLE TO MANUAL 
 
         //MANUAL TURRET
         driver.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
@@ -119,7 +122,7 @@ public class RobotContainer {
         
 
         //RUN MACROINTAKE
-        driver.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-1))));
+        driver.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
         //SHOOT COMMAND

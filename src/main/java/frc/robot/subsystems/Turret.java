@@ -266,7 +266,8 @@ public class Turret extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
-    SmartDashboard.putNumber("Turret Angle ", finalTurretAngle);
+    //SmartDashboard.putNumber("Turret Angle Set To", finalTurretAngle);
+    //SmartDashboard.putNumber("Current Turret Angle", )
     SmartDashboard.putNumber("Turret Position", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
 
@@ -304,6 +305,7 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
     SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
+   
     
     SmartDashboard.putBoolean("Zero Turret", zeroTurret.get());
 

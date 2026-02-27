@@ -43,11 +43,11 @@ public class Constants {
 
     public static class HoodConstants {
         // Fill these with measured data: SET THESE!
-        public static final double ANGLE1_DEG = 20.0;
-        public static final double MOTOR_ROT1 = -0.30;
+        public static final double ANGLE1_DEG = 8;
+        public static final double MOTOR_ROT1 = 0;
 
-        public static final double ANGLE2_DEG = 50.0;
-        public static final double MOTOR_ROT2 = -1.80;
+        public static final double ANGLE2_DEG = 32.0;
+        public static final double MOTOR_ROT2 = -2.6;
 
         public static final double MIN_POS_ROT = shooterConstants.hoodMinPosition; // -2.43
         public static final double MAX_POS_ROT = shooterConstants.hoodMaxPosition; // 0
@@ -82,7 +82,7 @@ public class Constants {
         public static final int shooterRight = 61;
         public static final int hood = 16;
         public static final double hoodMaxPosition = 0;//set
-        public static final double hoodMinPosition = -2.43;
+        public static final double hoodMinPosition = -2.5;
         public static final double wheelDiameterMeters = 0.0762;
         public static final double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
         

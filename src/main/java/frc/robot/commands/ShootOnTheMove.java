@@ -4,8 +4,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Turret;
 import frc.robot.ShootingSolver;
@@ -14,13 +16,15 @@ public class ShootOnTheMove extends Command {
     private final CommandSwerveDrivetrain drivetrain;
     private final Shooter shooter;
     private final Turret turret;
+    private final Intake intake;
 
     private double lastToF = 0.5;
 
-    public ShootOnTheMove(CommandSwerveDrivetrain drivetrain, Shooter shooter, Turret turret) {
+    public ShootOnTheMove(CommandSwerveDrivetrain drivetrain, Shooter shooter, Turret turret, Intake intake) {
         this.drivetrain = drivetrain;
         this.shooter = shooter;
         this.turret = turret;
+        this.intake = intake;
 
         // We require shooter + turret because we're commanding them.
         addRequirements(shooter, turret);
@@ -56,10 +60,19 @@ public class ShootOnTheMove extends Command {
         double ghostX = pose.getX() + fieldRel.vxMetersPerSecond * lastToF;
         double ghostY = pose.getY() + fieldRel.vyMetersPerSecond * lastToF;
         Rotation2d aimFieldAngle = goalPos.minus(new Translation2d(ghostX, ghostY)).getAngle();
-
+        
         // Apply to hardware
         shooter.setDifferentShooterRPMs(state.bottomRPM, state.topRPM);
         shooter.setHoodAngleDegrees(Math.toDegrees(state.angleRad));
         turret.aimFieldAngle(aimFieldAngle);
+        intake.hopper(0.6,-0.85);
+
+        SmartDashboard.putNumber("Bottom RPM", state.bottomRPM);
+        SmartDashboard.putNumber("Top RPM", state.topRPM);
+        SmartDashboard.putNumber("Hood Angle", state.angleRad);
+        //SmartDashboard.putNumber("Turret Angle", state.aimFieldAngle.getValueAsDouble());        
+
+
+        
     }
 }

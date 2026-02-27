@@ -112,7 +112,7 @@ public class Shooter extends SubsystemBase {
     finalShooterRPS.put(1.57, 50.0);
     finalShooterRPS.put(2.16, 60.0);
     finalShooterRPS.put(2.64, 67.0);
-    finalShooterRPS.put(4.09, 94.0);
+    finalShooterRPS.put(4.09, 94.0);// consider lowering because it is overshooting
     //finalShooterRPS.put(4.572, 0.75);
 
     timeOfFlight.put(1.57, 1.0);
@@ -221,10 +221,10 @@ public void setHoodAngleDegrees(double angleDeg) {
   }
 
   public void mainShooterPower() {
-    // shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    // shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    shooterLeft.setControl(speedControl.withVelocity(shooterPower)); //CONSIDER ADDING A CONSTANT TO ALL OF THESE VALUES TO COMPENSATE FOR THE HEAVIER WEIGHT? 
-    shooterRight.setControl(speedControl.withVelocity(shooterPower));
+    shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    //shooterLeft.setControl(speedControl.withVelocity(shooterPower)); //CONSIDER ADDING A CONSTANT TO ALL OF THESE VALUES TO COMPENSATE FOR THE HEAVIER WEIGHT? 
+    //shooterRight.setControl(speedControl.withVelocity(shooterPower));
     //shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
   }
 
@@ -251,11 +251,13 @@ public void setHoodAngleDegrees(double angleDeg) {
     mainHoodAngle = finalHoodPosition.get(Constants.distToGoal);
     mainShooterRPS = finalShooterRPS.get(Constants.distToGoal);
 
-    SmartDashboard.putNumber("Shooter RPS ", shooterPower);
+    SmartDashboard.putNumber("Shooter RPS Set To", shooterPower);
     SmartDashboard.putNumber("Real Shooter RPS ", shooterLeft.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Hood Position ", hood.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
     SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
+    SmartDashboard.putNumber("Hood Set to ", hoodPosition);
+
 
 
 
@@ -293,7 +295,7 @@ public void setHoodAngleDegrees(double angleDeg) {
 
 
     mainHoodAngle();
-    // mainShooterPower();
+    //mainShooterPower();
   }
 
   
