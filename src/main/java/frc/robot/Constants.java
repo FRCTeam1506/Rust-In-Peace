@@ -21,11 +21,11 @@ public class Constants {
     public static class ShotConstants {
     // Update to 2026 game measurements
     public static final double TARGET_HEIGHT_M = 1.8288;
-    public static final double SHOOTER_PIVOT_HEIGHT_M = 0.65;
+    public static final double SHOOTER_PIVOT_HEIGHT_M = 0.40; //make sure this is accurate
 
     // Wheel circumferences in meters (pi * diameter)
     public static final double CIRC_BOTTOM_M = 0.319; // SET THESE!
-    public static final double CIRC_TOP_M = 0.159;
+    public static final double CIRC_TOP_M = 0.0797; //meters, small sushi wheels
 
     // Efficiency scalar: v_ball = v_surface * K_EFF (tune!)
     public static final double K_EFF = 0.6;
