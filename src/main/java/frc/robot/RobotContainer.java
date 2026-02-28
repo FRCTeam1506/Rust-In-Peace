@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.shoot;
+import frc.robot.commands.shootmath;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake;
@@ -30,7 +32,7 @@ import frc.robot.commands.ShootOnTheMove;
 
 public class RobotContainer {
 
-
+    
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
@@ -54,8 +56,7 @@ public class RobotContainer {
     Intake intake = new Intake();
     Shooter shooter = new Shooter();
     Autos autos = new Autos(drivetrain, intake, shooter, turret);
-
-
+    ShootingMath shooterAimer = new ShootingMath(new Transform3d());
 
     private final SendableChooser<Command> autoChooser;
     private SendableChooser<Command> autoChooserManual;
@@ -106,10 +107,14 @@ public class RobotContainer {
         ));
 
         // add import
+        //operator.x().
 
         // in configureBindings():
-        driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
-        driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
+        //driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
+        //driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
+        //driver.a().whileTrue(new InstantCommand(() -> shooter.setShooterRPM(ShootingMath.initialCalcShot)).alongWith(new InstantCommand(hood.setHoodAngleDegrees()))
+        driver.a().whileTrue(new shootmath(shooter, intake, drivetrain));
+        driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
 
         //TODO: TOGGLE TO MANUAL 
 
@@ -125,10 +130,24 @@ public class RobotContainer {
         driver.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
+        operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
+        operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        
+        operator.povDown().whileTrue(new InstantCommand(() -> intake.manualIntake(0.1)));
+        operator.povUp().whileTrue(new InstantCommand(() -> intake.manualIntake(-0.1)));
+        operator.povDown().whileFalse(new InstantCommand(() -> intake.manualIntake(0)));
+        operator.povUp().whileFalse(new InstantCommand(() -> intake.manualIntake(0)));
+
+        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.shootSpeed(65.0))));
+        operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.shootSpeed(0))));
+        
+
         //SHOOT COMMAND
         driver.rightTrigger().whileTrue(new shoot(shooter, intake));
-        driver.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
     
+        operator.rightTrigger().whileTrue(new shoot(shooter, intake));
+        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
+
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
         driver.rightStick().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
         driver.leftStick().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));

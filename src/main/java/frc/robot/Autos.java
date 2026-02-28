@@ -57,13 +57,13 @@ public class Autos {
         NamedCommands.registerCommand("Climber Up", new InstantCommand(() -> climber.climberUp()));
         NamedCommands.registerCommand("Climber Down", new InstantCommand(() -> climber.climberDown()));
 
-        NamedCommands.registerCommand("Shoot Mode 4", new InstantCommand(() -> Turret.shootMode = 1));
+        NamedCommands.registerCommand("Shoot Mode 1", new InstantCommand(() -> Turret.shootMode = 1));
 
         NamedCommands.registerCommand("Hood Low", new InstantCommand(() -> shooter.hoodLow()));
 
         NamedCommands.registerCommand("Corner Shot", new InstantCommand(() -> {
             shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle);
-            turret.setTurretToAngle(Constants.shooterConstants.cornerShotTurretAngle);
+            //turret.setTurretToAngle(Constants.shooterConstants.cornerShotTurretAngle);
             shooter.setShooterRPM(Constants.shooterConstants.cornerShotRPM);
         }));
 

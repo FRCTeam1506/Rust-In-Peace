@@ -17,6 +17,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
@@ -130,6 +131,9 @@ public class Turret extends SubsystemBase {
   private static final InterpolatingDoubleTreeMap shooterPower = new InterpolatingDoubleTreeMap();
 
   public final static CommandXboxController driver = new CommandXboxController(0);
+
+  Transform2d turretOffset = new Transform2d(-0.19, -0.14, new Rotation2d(0));
+  Pose2d turretPose = new Pose2d();
   
   /** Creates a new Turret. */
     private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID); 
@@ -265,6 +269,13 @@ public class Turret extends SubsystemBase {
 
   @Override
   public void periodic() {
+    robotPose = drivetrain.getState().Pose;
+    if(robotPose != null) {
+        turretPose = robotPose.plus(turretOffset);
+        System.out.println("Success! Turret Pose: " + turretPose);
+
+    }
+
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     //SmartDashboard.putNumber("Turret Angle Set To", finalTurretAngle);
     //SmartDashboard.putNumber("Current Turret Angle", )
@@ -272,12 +283,12 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
 
     
-    // vRobotY = drivetrain.getState().Pose.getY() - (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight) + 0.1;
-    // vRobotX = drivetrain.getState().Pose.getX() - (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight);
-    vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*+ 0.2*/;
-    vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*- 0.2*/; //Added (Constants.timeOfFlight * 1.2) because the offset while driving wasn't enough
+    vRobotY = turretPose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight * 1.1);
+    vRobotX = turretPose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight * 1.1);
+    //vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*+ 0.2*/;
+    //vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*- 0.2*/; //Added (Constants.timeOfFlight * 1.2) because the offset while driving wasn't enough
 
-    robotPose = drivetrain.getState().Pose;
+
     robotPoseX = drivetrain.getState().Pose.getX();
     robotPoseY = drivetrain.getState().Pose.getY();
 
@@ -316,7 +327,7 @@ public class Turret extends SubsystemBase {
       case 0:
         Turret.set(0);
         break;
-      case 1:
+      case 1: //AIM ONLY TO GOALS
         if (red == true) {
           goalLocation = new Translation2d(goalRedX, goalRedY);
           thetaX = goalLocation.getX() - vRobotX;
@@ -328,7 +339,7 @@ public class Turret extends SubsystemBase {
         }
         break;
     
-      case 2:
+      case 2: //AIM TO LEFT SIDES FOR MAILING
         if (red == true) {
           goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
           thetaX = goalLocation.getX() - vRobotX;
@@ -340,7 +351,7 @@ public class Turret extends SubsystemBase {
         }
         break;
 
-      case 3:
+      case 3: //AIM TO RIGHT SIDES FOR MAILING
         if (red == true) {
           goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
           thetaX = goalLocation.getX() - vRobotX;
@@ -351,7 +362,7 @@ public class Turret extends SubsystemBase {
           thetaY = goalLocation.getY() - vRobotY;
         }
         break;
-      case 4: //red 
+      case 4: //ALL TOGETHER
         if(red == true) {
           if (robotPoseX > redLine) {
             goalLocation = new Translation2d(goalRedX, goalRedY);

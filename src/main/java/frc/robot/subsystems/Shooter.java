@@ -76,7 +76,7 @@ public class Shooter extends SubsystemBase {
     slot0hoodConfigs.kS = 0.24; // add 0.24 V to overcome friction
     slot0hoodConfigs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
     // PID runs on position
-    slot0hoodConfigs.kP = 2.5; //2.5
+    slot0hoodConfigs.kP = 10; //2.5
     slot0hoodConfigs.kI = 0;
     slot0hoodConfigs.kD = 0.25;
 
@@ -103,22 +103,38 @@ public class Shooter extends SubsystemBase {
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
-    finalHoodPosition.put(1.57, 0.0);
-    finalHoodPosition.put(2.16, -0.2);
-    finalHoodPosition.put(2.64, -0.45);
-    finalHoodPosition.put(4.09, -1.7);
-    //finalHoodPosition.put(4.572, -1.45);
+    finalHoodPosition.put(1.68, 0.0); //somewhat close to the hub
+    finalHoodPosition.put(2.31, 0.0); // closer to the climbing rack
+    finalHoodPosition.put(2.87, -0.64); //at the climbing rack
+    finalHoodPosition.put(3.94, -1.24); //back against the back wall
+    finalHoodPosition.put(4.27, -1.1865234375); //in the square thing
+    finalHoodPosition.put(5.03, -1.66796875); //in the back corner
+    finalHoodPosition.put(3.23, -0.66); //auton starting point
 
-    finalShooterRPS.put(1.57, 50.0);
-    finalShooterRPS.put(2.16, 60.0);
-    finalShooterRPS.put(2.64, 67.0);
-    finalShooterRPS.put(4.09, 94.0);// consider lowering because it is overshooting
-    //finalShooterRPS.put(4.572, 0.75);
 
-    timeOfFlight.put(1.57, 1.0);
-    timeOfFlight.put(2.16, 1.1);
-    timeOfFlight.put(2.64, 1.35);
-    timeOfFlight.put(4.09, 1.6);
+
+
+    finalShooterRPS.put(1.68, 49.0);
+    finalShooterRPS.put(2.31, 53.0);
+    finalShooterRPS.put(2.87, 65.0);
+    finalShooterRPS.put(3.94, 76.0);// consider lowering because it is overshooting
+    finalShooterRPS.put(4.27, 75.0);
+    finalShooterRPS.put(5.03, 83.0);
+    //finalShooterRPS.put(3.23, 70);
+
+
+
+
+    timeOfFlight.put(1.68, 1.0);
+    timeOfFlight.put(2.31, 1.12);
+    timeOfFlight.put(2.87, 1.4);
+    timeOfFlight.put(3.94, 1.4);
+    timeOfFlight.put(4.27, 1.5);
+    timeOfFlight.put(5.03, 1.55);
+    //timeOfFlight.put(3.23, 1.55);
+
+
+
   }
 
   public void shoot(double speed) {
@@ -138,6 +154,10 @@ public class Shooter extends SubsystemBase {
     shooterRight.set(shooterPower/100);
   }
 
+  public void shootSpeed(double speed) {
+    shooterLeft.setControl(speedControl.withVelocity(speed));
+    shooterRight.setControl(speedControl.withVelocity(speed));
+  }
   public void zeroHood() {
     hood.setPosition(0);
   }
@@ -205,7 +225,7 @@ public void setHoodAngleDegrees(double angleDeg) {
       Constants.HoodConstants.MIN_POS_ROT,
       Constants.HoodConstants.MAX_POS_ROT
   );
-
+System.out.println("Angle degrees " + angleDeg);
   hood.setControl(m_motmag.withPosition(targetRot));
 }
 
@@ -215,10 +235,18 @@ public void setHoodAngleDegrees(double angleDeg) {
     } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) {
       hood.setControl(m_motmag.withPosition(shooterConstants.hoodMaxPosition));
     } else {
-      //hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
-      hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+      //hood.setControl(m_motmag.withPosition(mainHoodAngle));
     }
+    //hood.setControl(m_motmag.withPosition(hoodAngleDegrees()));
   }
+
+  public void setShooterToMathRPMFromMPS(double vSurface) {
+      final double bottomRPM = (vSurface / Constants.ShotConstants.CIRC_BOTTOM_M) * 60.0;
+      final double topRPM = (vSurface / Constants.ShotConstants.CIRC_TOP_M) * 60.0;    
+      setDifferentShooterRPMs(bottomRPM, topRPM);
+  }
+  
 
   public void mainShooterPower() {
     shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
@@ -295,6 +323,8 @@ public void setHoodAngleDegrees(double angleDeg) {
 
 
     mainHoodAngle();
+
+
     //mainShooterPower();
   }
 
