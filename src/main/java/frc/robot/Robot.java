@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -99,6 +100,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    m_robotContainer.intake.zeroIntake();
+    m_robotContainer.shooter.zeroHood();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
@@ -114,8 +117,11 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    m_robotContainer.intake.zeroIntake();
-    m_robotContainer.shooter.zeroHood();
+    if(DriverStation.getMatchTime() <= 10) { //this means that we are at home
+      m_robotContainer.intake.zeroIntake();
+      m_robotContainer.shooter.zeroHood();
+    }
+    
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
