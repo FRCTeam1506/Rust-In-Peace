@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -37,7 +38,7 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
-
+  private int matchTimer;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
@@ -120,7 +121,18 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() { 
+    matchTimer = (int)DriverStation.getMatchTime();
+
+       if(matchTimer == 132 || matchTimer == 107 || matchTimer == 82 || matchTimer == 57)
+       {
+       m_robotContainer.joystick.setRumble(RumbleType.kBothRumble, 0.75);
+       }
+       else
+       {
+        m_robotContainer.joystick.setRumble(RumbleType.kBothRumble, 0.0);
+       }
+  }
 
   @Override
   public void teleopExit() {}
