@@ -48,9 +48,9 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController testing = new CommandXboxController(2);
-    private final CommandPS4Controller driver = new CommandPS4Controller(0);
-    private final CommandXboxController operator = new CommandXboxController(1);
+    public final CommandXboxController testing = new CommandXboxController(2);
+    public final CommandPS4Controller driver = new CommandPS4Controller(0);
+    public final CommandXboxController operator = new CommandXboxController(1);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -93,9 +93,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-testing.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-testing.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -133,8 +133,7 @@ public class RobotContainer {
         // driver.povDown().whileFalse(new InstantCommand(() -> climber.stop()));
         // driver.povDown().whileTrue(new InstantCommand(() -> climber.climberDown()));
         // driver.povUp().whileFalse(new InstantCommand(() -> climber.stop()));
-
-        driver.L1().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.square().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
 
         // in configureBindings():
@@ -161,19 +160,17 @@ public class RobotContainer {
         operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
         
-        operator.povDown().whileTrue(new InstantCommand(() -> intake.manualIntake(0.1)));
-        operator.povUp().whileTrue(new InstantCommand(() -> intake.manualIntake(-0.1)));
-        operator.povDown().whileFalse(new InstantCommand(() -> intake.manualIntake(0)));
-        operator.povUp().whileFalse(new InstantCommand(() -> intake.manualIntake(0)));
+        operator.povUp().whileTrue(new InstantCommand(() -> intake.manualIntake(-0.5)));
+        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntake()).alongWith(new InstantCommand(() -> intake.manualIntake(0))));
 
         operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.shootSpeed(65.0))));
-        operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.shootSpeed(0))));
+        operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
         
         operator.b().whileTrue(new InstantCommand(() -> Turret.shootMode = 2).andThen(new shoot(shooter, intake)));
         operator.b().whileFalse(new InstantCommand(() -> Turret.shootMode = 4).alongWith(new InstantCommand(() -> shooter.stopShooter())));
 
-        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)));
-        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)));
+        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
+        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopIntake()))));
 
         operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntake()));
         operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));

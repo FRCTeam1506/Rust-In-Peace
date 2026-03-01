@@ -67,6 +67,8 @@ public class Turret extends SubsystemBase {
   double goalRedY = 4.034536;
   double goalBlueX = -12; //Red Goal
   double goalBlueY = 4.034536;
+
+  
   double theta;
   double angleToGoal;
   double turretAngleTarget;

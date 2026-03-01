@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.intakeConstants;
+import frc.robot.commands.CornerShot;
 import frc.robot.commands.shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -61,11 +62,7 @@ public class Autos {
 
         NamedCommands.registerCommand("Hood Low", new InstantCommand(() -> shooter.hoodLow()));
 
-        NamedCommands.registerCommand("Corner Shot", new InstantCommand(() -> {
-            shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle);
-            //turret.setTurretToAngle(Constants.shooterConstants.cornerShotTurretAngle);
-            shooter.setShooterRPM(Constants.shooterConstants.cornerShotRPM);
-        }));
+        NamedCommands.registerCommand("Corner Shot", new CornerShot(shooter, intake));
 
 
 

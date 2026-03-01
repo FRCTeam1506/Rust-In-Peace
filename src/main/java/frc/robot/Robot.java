@@ -34,6 +34,8 @@ public class Robot extends TimedRobot {
 
   private final boolean kUseLimelight = true;
 
+  public double matchTimer;
+
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -65,10 +67,13 @@ public class Robot extends TimedRobot {
 
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_LEFT, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_RIGHT, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      LimelightHelpers.SetRobotOrientation(VisionConstants.LL_BACK, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
       
       var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
+      var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
       var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
+
 
       if (llMeasurement_left != null && llMeasurement_left.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_LEFT) > 0.33) {
 
@@ -86,6 +91,15 @@ public class Robot extends TimedRobot {
         //System.out.println("heading " + headingDeg);
 
       }
+
+      if (llMeasurement_back != null && llMeasurement_back.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_BACK) > 0.33) {
+        m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_back.pose, llMeasurement_back.timestampSeconds);
+        //System.out.println("right " + llMeasurement_right.pose);
+        //System.out.println("heading " + headingDeg);
+
+      }
+
+
     }
   }
 
@@ -128,14 +142,24 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    
+    matchTimer = (int)DriverStation.getMatchTime();
+
+    if(matchTimer == 132 || matchTimer == 107 || matchTimer == 82 || matchTimer == 57) {
+      m_robotContainer.operator.setRumble(RumbleType.kBothRumble, 0.75);
+    }
+    else {
+      m_robotContainer.operator.setRumble(RumbleType.kBothRumble, 0.0);
+    }
+
+  }
 
   @Override
   public void teleopExit() {}
 
   @Override
   public void robotInit(){
-
   }
 
   @Override

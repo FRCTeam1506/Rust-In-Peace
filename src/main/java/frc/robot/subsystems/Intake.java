@@ -73,6 +73,7 @@ public class Intake extends SubsystemBase {
     intakeLift.set(speed);
   }
 
+
   public void hopper (double speed, double kickerSpeed) {
     hopper.set(speed);
     kicker.set(kickerSpeed);
@@ -83,6 +84,11 @@ public class Intake extends SubsystemBase {
     kicker.set(0);
     intake.set(0);
   }
+
+  public void intakeLiftStop() {
+    intakeLift.set(0);
+  }
+  
 
   public void zeroIntake() {
     intakeLift.setPosition(0);

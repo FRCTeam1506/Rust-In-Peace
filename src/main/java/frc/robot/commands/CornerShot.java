@@ -14,20 +14,19 @@ import frc.robot.subsystems.Shooter;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class shoot extends SequentialCommandGroup {
+public class CornerShot extends SequentialCommandGroup {
   /** Creates a new shoot. */
-  public shoot(Shooter shooter, Intake intake) {
+  public CornerShot(Shooter shooter, Intake intake) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       // new InstantCommand(() -> shooter.shoot(0.75)), //0.75
-      new InstantCommand(() -> shooter.mainShooterPower()),
-      new WaitCommand(1),
+      new InstantCommand(() -> shooter.setShooterRPM(Constants.shooterConstants.cornerShotRPM)),
+      new InstantCommand(() -> shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle)),      
+      new WaitCommand(0.5),
       new InstantCommand(() -> intake.hopper(0, -0.4)),
       new WaitCommand(0.25),
-      new InstantCommand(() -> intake.hopper(0.6,-0.85)),
-      // new InstantCommand(() -> shooter.shoot(0.75)) //0.5
-      new InstantCommand(() -> shooter.mainShooterPower())
+      new InstantCommand(() -> intake.hopper(0.6,-0.85))
     );
   }
 }

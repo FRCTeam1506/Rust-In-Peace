@@ -117,6 +117,7 @@ public class Constants {
     public class VisionConstants {
 
         public static final String LL_LEFT = "limelight-left"; //side of the turret
+        public static final String LL_BACK = "limelight-back";
         public static final String LL_RIGHT = "limelight-right";
         //public static final String LL_FRONT = "limelight-front"; //human player side
 

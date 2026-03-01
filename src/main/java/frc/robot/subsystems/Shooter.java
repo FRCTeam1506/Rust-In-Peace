@@ -273,6 +273,7 @@ System.out.println("Angle degrees " + angleDeg);
 
   @Override
   public void periodic() {
+    //add lower hood if going under trench
     shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
 
 

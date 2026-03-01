@@ -39,13 +39,7 @@
   "eventMarkers": [
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 0.2,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
-      "name": "Run Shooter",
-      "waypointRelativePos": 0.4,
+      "waypointRelativePos": 0.26056338028168846,
       "endWaypointRelativePos": null,
       "command": null
     }
