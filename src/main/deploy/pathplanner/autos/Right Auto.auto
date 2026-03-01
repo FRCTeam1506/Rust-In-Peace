@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "Shoot Mode 1"
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -17,16 +23,35 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Run Shooter"
+                  "name": "Corner Shot"
                 }
               }
             ]
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "Right First"
+            "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "deadline",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Right First"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Hood Low"
+                }
+              }
+            ]
           }
         },
         {
@@ -55,6 +80,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Stop Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Right Third"
@@ -75,6 +106,12 @@
                 "data": {
                   "name": "Run Shooter"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Stop Intake"
+                }
               }
             ]
           }
@@ -83,6 +120,12 @@
           "type": "named",
           "data": {
             "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Corner Shot"
           }
         }
       ]

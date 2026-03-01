@@ -7,19 +7,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Corner Shot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Shoot Mode 1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Run Shooter"
           }
         },
         {
@@ -35,7 +23,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Run Shooter"
+                  "name": "Corner Shot"
                 }
               }
             ]
@@ -92,6 +80,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Stop Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "LeftThird"
@@ -126,6 +120,12 @@
           "type": "named",
           "data": {
             "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Corner Shot"
           }
         }
       ]

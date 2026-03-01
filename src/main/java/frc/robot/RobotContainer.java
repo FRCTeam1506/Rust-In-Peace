@@ -141,9 +141,13 @@ public class RobotContainer {
         operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.shootSpeed(65.0))));
         operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.shootSpeed(0))));
         
+        operator.b().whileTrue(new InstantCommand(() -> turret.shootMode = 2).alongWith(new InstantCommand(() -> shooter.shoot())));
+        operator.b().whileFalse(new InstantCommand(() -> turret.shootMode = 4).alongWith(new InstantCommand(() -> shooter.stopShooter())));
 
+        operator.s
         //SHOOT COMMAND
         driver.rightTrigger().whileTrue(new shoot(shooter, intake));
+        driver.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
     
         operator.rightTrigger().whileTrue(new shoot(shooter, intake));
         operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopIntake())));
