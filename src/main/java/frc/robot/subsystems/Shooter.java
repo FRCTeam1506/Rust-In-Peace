@@ -155,7 +155,7 @@ public class Shooter extends SubsystemBase {
   public void shoot(double speed) {
     //shooterLeft.set(shooterPower/100); //was speed
     //shooterRight.set(shooterPower/100);
-    shooterLeft.setControl(speedControl.withVelocity(shooterPower));
+    shooterLeft.setControl(speedControl.withVelocity(-shooterPower));
     shooterRight.setControl(speedControl.withVelocity(shooterPower));
   }
 
