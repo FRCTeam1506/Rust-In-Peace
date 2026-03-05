@@ -106,7 +106,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        testing.y().whileTrue(drivetrain.applyRequest(() -> brake));
+        //testing.y().whileTrue(drivetrain.applyRequest(() -> brake));
         testing.x().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-testing.getLeftY(), -testing.getLeftX()))
         ));
@@ -149,8 +149,8 @@ public class RobotContainer {
         testing.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
         testing.x().whileFalse(new InstantCommand(() -> turret.stopTurret()));
 
-        testing.y().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.1)));
-        testing.y().whileFalse(new InstantCommand(() -> turret.stopTurret()));
+        //testing.y().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.1)));
+        //testing.y().whileFalse(new InstantCommand(() -> turret.stopTurret()));
         
 
         //RUN MACROINTAKE
@@ -198,8 +198,16 @@ public class RobotContainer {
         testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
         testing.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
+        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.5)));
+        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.5)));
+        testing.b().whileFalse(new InstantCommand(() -> shooter.stopHood()));
+        testing.y().whileFalse(new InstantCommand(() -> shooter.stopHood()));
+
+
         //MANUAL SHOOTER POWER
         testing.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        // testing.povUp().whileTrue(new InstantCommand(() -> shooter.setHood(0.1)));
+        // testing.povUp().whileFalse(new InstantCommand(() -> shooter.stopHood()));
         testing.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
 
         //RUN SHOOTER POWER

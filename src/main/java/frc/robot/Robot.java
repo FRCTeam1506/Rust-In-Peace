@@ -133,7 +133,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     if(DriverStation.getMatchTime() <= 10) { //this means that we are at home
       m_robotContainer.intake.zeroIntake();
-      m_robotContainer.shooter.zeroHood();
+      //m_robotContainer.shooter.zeroHood();
     }
     
     if (m_autonomousCommand != null) {

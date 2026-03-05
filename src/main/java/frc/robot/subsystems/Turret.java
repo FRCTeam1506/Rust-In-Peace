@@ -68,7 +68,7 @@ public class Turret extends SubsystemBase {
   double goalBlueX = -12; //Red Goal
   double goalBlueY = 4.034536;
 
-  
+
   double theta;
   double angleToGoal;
   double turretAngleTarget;
@@ -314,7 +314,7 @@ public class Turret extends SubsystemBase {
     //System.out.println("Dist to goal" + dist);
 
 
-    setTurretToAngle(finalTurretAngle);
+    //setTurretToAngle(finalTurretAngle);
     SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
     SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
@@ -326,9 +326,9 @@ public class Turret extends SubsystemBase {
 
     
     switch (shootMode) {
-      case 0:
-        Turret.set(0);
-        break;
+      // case 0:
+      //   Turret.set(0);
+      //   break;
       case 1: //AIM ONLY TO GOALS
         if (red == true) {
           goalLocation = new Translation2d(goalRedX, goalRedY);
@@ -400,6 +400,10 @@ public class Turret extends SubsystemBase {
           }
           
         }
+          break;
+        default:
+          Turret.set(0);
+          break;
 
 
       
@@ -407,11 +411,11 @@ public class Turret extends SubsystemBase {
     }
 
 
-    if (shootMode > 4) {
-      shootMode = 4;
-    } else if (shootMode < 0) {
-      shootMode = 0;
-    }
+    // if (shootMode > 4) {
+    //   shootMode = 4;
+    // } else if (shootMode < 0) {
+    //   shootMode = 0;
+    // }
     SmartDashboard.putNumber("ShootMode: ", shootMode);
 
     //System.out.println("shoot mode:" + shootMode);

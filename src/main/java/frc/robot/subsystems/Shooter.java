@@ -4,25 +4,36 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.ControlFrame;
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
+import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
 import frc.robot.Constants.shooterConstants;
 
 public class Shooter extends SubsystemBase {
   private TalonFX shooterLeft = new TalonFX(shooterConstants.shooterLeft);
   private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
-  private TalonFX hood = new TalonFX(shooterConstants.hood);
+  private TalonSRX hood = new TalonSRX(16);
+  private CANcoder hoodEncoder = new CANcoder(55);
 
   double shooterPower = 50;
   double hoodPosition;
@@ -50,20 +61,29 @@ public class Shooter extends SubsystemBase {
   /** Creates a new Intake. */
   public Shooter() {
 
-    var talonFXConfigs = new TalonFXConfiguration();
-    var hoodConfigs = new TalonFXConfiguration();
-
-    // talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 80;
-
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-    hood.getConfigurator().apply(config);
+    // Sets distance conversion: (Wheel Diameter * PI) / PulsesPerRevolution
+    //m_encoder.setDistancePerPulse(1.0 / 360.0);
+    hood.configRemoteFeedbackFilter(55, RemoteSensorSource.CANCoder,0);
+    hood.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+    hood.config_kP(0, 1, 10); // Adjust PID values
+    hood.config_kI(0, 1, 10);
+    hood.config_kD(0, 0, 10);
+    hood.config_kF(0, 0.0, 10);
+    hood.configMotionCruiseVelocity(1);
+    hood.configMotionAcceleration(0.2);
+    hood.setControlFramePeriod(ControlFrame.Control_3_General, 100);
     
 
+
+
+    var talonFXConfigs = new TalonFXConfiguration();
+    TalonSRXConfiguration SRXconfig = new TalonSRXConfiguration();
+
+    talonFXConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+    talonFXConfigs.CurrentLimits.StatorCurrentLimit = 80;
+
+
+    //talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
@@ -72,15 +92,11 @@ public class Shooter extends SubsystemBase {
 
     // set slot 0 gains
     var slot0Configs = talonFXConfigs.Slot0;
-    var slot0hoodConfigs = hoodConfigs.Slot0;
-    slot0hoodConfigs.kS = 0.24; // add 0.24 V to overcome friction
-    slot0hoodConfigs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
-    // PID runs on position
-    slot0hoodConfigs.kP = 10; //2.5
-    slot0hoodConfigs.kI = 0;
-    slot0hoodConfigs.kD = 0.25;
+    var slot0SRXconfig = SRXconfig.slot0;
 
-    slot0hoodConfigs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
+    slot0SRXconfig.kP = 10; //2.5
+    slot0SRXconfig.kI = 0;
+    slot0SRXconfig.kD = 0.25;
 
     slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
@@ -91,14 +107,13 @@ public class Shooter extends SubsystemBase {
 
     slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
 
-    config.Slot0 = slot0Configs;
-    
-
+    SRXconfig.slot0 = slot0SRXconfig;
+  
     m_motmag.EnableFOC = true;
 
-
-    hood.getConfigurator().apply(motionMagicConfigs);
-    hood.getConfigurator().apply(slot0hoodConfigs); 
+    // hood.getConfigurator().apply(motionMagicConfigs);
+    // hood.getConfigurator().apply(slot0hoodConfigs); 
+    // hood.configAllSettings(SRXconfig);
     shooterLeft.getConfigurator().apply(slot0Configs);
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
@@ -159,7 +174,7 @@ public class Shooter extends SubsystemBase {
     shooterRight.setControl(speedControl.withVelocity(speed));
   }
   public void zeroHood() {
-    hood.setPosition(0);
+    hoodEncoder.setPosition(0);
   }
 
   public void setDifferentShooterRPMs(double bottomRPM, double topRPM) {
@@ -168,11 +183,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public void hood (double speed) {
-    hood.set(speed);
+    hood.set(ControlMode.PercentOutput, speed);
   }
 
   public void setHood(double position) {
-    hood.setControl(m_motmag.withPosition(hoodPosition)); //was position, then Constants.shooterConstants.hoodPosition
+    hood.set(TalonSRXControlMode.MotionMagic, position); //was position, then Constants.shooterConstants.hoodPosition
+    
   }
 
   public void changeShooterUp() {
@@ -183,17 +199,20 @@ public class Shooter extends SubsystemBase {
   }
 
   public void changeHoodUp() {
-    hoodPosition += 0.05;
-    hood.setControl(m_motmag.withPosition(hoodPosition));
+    // hoodPosition += 0.05;
+    // hood.set(ControlMode.Position, hoodPosition);
+    hood.set(TalonSRXControlMode.Position, 0.5);
+
+    
 
   }
 
   public void hoodLow() {
-      hood.setControl(m_motmag.withPosition(Constants.shooterConstants.hoodMinPosition));
+      hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
   }
   public void changeHoodDown() {
     hoodPosition -= 0.05;
-    hood.setControl(m_motmag.withPosition(hoodPosition));
+    hood.set(TalonSRXControlMode.Position, hoodPosition);
   }
 
 
@@ -226,16 +245,16 @@ public void setHoodAngleDegrees(double angleDeg) {
       Constants.HoodConstants.MAX_POS_ROT
   );
 System.out.println("Angle degrees " + angleDeg);
-  hood.setControl(m_motmag.withPosition(targetRot));
+  //hood.setControl(m_motmag.withPosition(targetRot));
 }
 
   public void mainHoodAngle() {
     if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-      hood.setControl(m_motmag.withPosition(shooterConstants.hoodMinPosition));
+      hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
     } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) {
-      hood.setControl(m_motmag.withPosition(shooterConstants.hoodMaxPosition));
+      hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
     } else {
-      hood.setControl(m_motmag.withPosition(finalHoodPosition.get(Constants.distToGoal)));
+      hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
       //hood.setControl(m_motmag.withPosition(mainHoodAngle));
     }
     //hood.setControl(m_motmag.withPosition(hoodAngleDegrees()));
@@ -246,10 +265,18 @@ System.out.println("Angle degrees " + angleDeg);
       final double topRPM = (vSurface / Constants.ShotConstants.CIRC_TOP_M) * 60.0;    
       setDifferentShooterRPMs(bottomRPM, topRPM);
   }
+
+  public void runHood(double speed) {
+    hood.set(TalonSRXControlMode.PercentOutput, speed);
+  }
+
+  public void stopHood() {
+    hood.set(ControlMode.PercentOutput, 0);
+  }
   
 
   public void mainShooterPower() {
-    shooterLeft.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
+    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal)));
     shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
     //shooterLeft.setControl(speedControl.withVelocity(shooterPower)); //CONSIDER ADDING A CONSTANT TO ALL OF THESE VALUES TO COMPENSATE FOR THE HEAVIER WEIGHT? 
     //shooterRight.setControl(speedControl.withVelocity(shooterPower));
@@ -267,12 +294,12 @@ System.out.println("Angle degrees " + angleDeg);
     else {
     calculatedTOF = distanceMeters/vX;
     }
-
     return calculatedTOF;
   }
 
   @Override
   public void periodic() {
+    hood.set(ControlMode.MotionMagic, hoodPosition);
     //add lower hood if going under trench
     shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
 
@@ -282,7 +309,7 @@ System.out.println("Angle degrees " + angleDeg);
 
     SmartDashboard.putNumber("Shooter RPS Set To", shooterPower);
     SmartDashboard.putNumber("Real Shooter RPS ", shooterLeft.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Hood Position ", hood.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("Hood Position ", hoodEncoder.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
     SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
     SmartDashboard.putNumber("Hood Set to ", hoodPosition);
@@ -323,7 +350,7 @@ System.out.println("Angle degrees " + angleDeg);
     // shoot(shooterConstants.shooterPower);
 
 
-    mainHoodAngle();
+    //mainHoodAngle();
 
 
     //mainShooterPower();
