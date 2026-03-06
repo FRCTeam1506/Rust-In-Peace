@@ -47,6 +47,8 @@ public class Turret extends SubsystemBase {
   Optional<Alliance> alliance = DriverStation.getAlliance();
   public static int shootMode = 4; //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
 
+  double omega;
+
 
   //Variables for getting angle to goal.
   double goalRedX = 12; //Red Goal
@@ -60,6 +62,9 @@ public class Turret extends SubsystemBase {
   double finalTurretPos;
   double vRobotY;
   double vRobotX;
+
+  double vRotationalRobotY;
+  double vRotationalRobotX;
 
   //FIELD LOCATIONS:
 
@@ -113,7 +118,12 @@ public class Turret extends SubsystemBase {
   double thetaX, thetaY;
   double toDegree;
 
+  double totalVY;
+  double totalVX;
+
   double timeOffset;
+
+  Translation2d rotationalVelocityField;
   private static final InterpolatingDoubleTreeMap hoodPosition = new InterpolatingDoubleTreeMap();
   private static final InterpolatingDoubleTreeMap shooterPower = new InterpolatingDoubleTreeMap();
 
@@ -121,6 +131,9 @@ public class Turret extends SubsystemBase {
 
   Transform2d turretOffset = new Transform2d(-0.19, -0.14, new Rotation2d(0));
   Pose2d turretPose = new Pose2d();
+
+  double totalFieldVy;
+  double totalFieldVx;
   
   /** Creates a new Turret. */
     private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID); 
@@ -256,6 +269,7 @@ public class Turret extends SubsystemBase {
 
   @Override
   public void periodic() {
+    omega = drivetrain.getState().Speeds.omegaRadiansPerSecond;
     robotPose = drivetrain.getState().Pose;
     if(robotPose != null) {
         turretPose = drivetrain.getState().Pose.transformBy(turretOffset); //Use this instead of drivetrain pose to account for tuuret offset and rotation of the robot. 
@@ -269,9 +283,16 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Turret Position", Turret.getPosition().getValueAsDouble());
     SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
 
+    //Get Rotational Speeds and offset it by robot heading. 
+    vRotationalRobotY = omega * turretOffset.getX();
+    vRotationalRobotX = -omega * turretOffset.getY();
+    rotationalVelocityField = new Translation2d(vRotationalRobotX, vRotationalRobotY).rotateBy(drivetrain.getState().Pose.getRotation());
+
+    totalFieldVy = drivetrain.getState().Speeds.vyMetersPerSecond + rotationalVelocityField.getY();
+    totalFieldVx = drivetrain.getState().Speeds.vxMetersPerSecond + rotationalVelocityField.getX();
     
-    vRobotY = turretPose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight * 1.1);
-    vRobotX = turretPose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight * 1.1);
+    vRobotY = turretPose.getY() + (totalFieldVy * Constants.timeOfFlight * 1.1);
+    vRobotX = turretPose.getX() + (totalFieldVx * Constants.timeOfFlight * 1.1);
     //vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*+ 0.2*/;
     //vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*- 0.2*/; //Added (Constants.timeOfFlight * 1.2) because the offset while driving wasn't enough
 
