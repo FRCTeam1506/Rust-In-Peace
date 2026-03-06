@@ -180,33 +180,42 @@ public class Turret extends SubsystemBase {
     robotPoseX = drivetrain.getState().Pose.getX();
     robotPoseY = drivetrain.getState().Pose.getY();
 
-    turretPose = drivetrain.getState().Pose.transformBy(turretOffset); //Use this instead of drivetrain pose to account for tuuret offset and rotation of the robot. 
+    //Use this instead of drivetrain pose to account for tuuret offset and rotation of the robot. 
+    turretPose = drivetrain.getState().Pose.transformBy(turretOffset); 
 
+    //Virtual rotational pose
     vRotationalRobotY = omega * turretOffset.getX();
     vRotationalRobotX = -omega * turretOffset.getY();
     rotationalVelocityField = new Translation2d(vRotationalRobotX, vRotationalRobotY).rotateBy(drivetrain.getState().Pose.getRotation());
 
+    //Add speed
     totalFieldVy = drivetrain.getState().Speeds.vyMetersPerSecond + rotationalVelocityField.getY();
     totalFieldVx = drivetrain.getState().Speeds.vxMetersPerSecond + rotationalVelocityField.getX();
     
+    //Times time of flight
     vRobotY = turretPose.getY() + (totalFieldVy * Constants.timeOfFlight * flightTimeMultiplier);
     vRobotX = turretPose.getX() + (totalFieldVx * Constants.timeOfFlight * flightTimeMultiplier);
+    vRobotPose = new Translation2d(vRobotX, vRobotY);
 
+    //Math to get angle 
     heading = drivetrain.getState().Pose.getRotation().getDegrees();
     theta = Math.atan2(thetaY, thetaX);
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
+
+    //Set min and max
     finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 85);
 
-    vRobotPose = new Translation2d(vRobotX, vRobotY);
+    //Set turret to angle
+    setTurretToAngle(finalTurretAngle);
+
+    //Get dist to goal
     targetVec = goalLocation.minus(vRobotPose);
     dist = targetVec.getNorm();
     Constants.distToGoal = dist;
     //System.out.println("Dist to goal" + dist);
 
-
-    setTurretToAngle(finalTurretAngle);
-
+    //Shoot mode
     switch (shootMode) {
         case 0: //Keep turret at zero
           turret.setControl(m_motmag.withPosition(0));
@@ -295,8 +304,7 @@ public class Turret extends SubsystemBase {
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     //SmartDashboard.putNumber("Turret Angle Set To", finalTurretAngle); 
   
-    
-
+  
     //Zero turret if sensor is triggered
     if (zeroTurret.get() == false) {
       zeroTurret();
@@ -309,6 +317,7 @@ public class Turret extends SubsystemBase {
       goalBlueX = 4;
     }
 
+    //Set shoot mode in constants for shooter subsytem to get
     Constants.shootMode = shootMode;
   }
 }
