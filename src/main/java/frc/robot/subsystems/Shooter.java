@@ -17,19 +17,31 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-
+import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.shooterConstants;
 
 public class Shooter extends SubsystemBase {
+  double xVelocity;
+  private final ProfiledPIDController xController =
+  new ProfiledPIDController(
+      1,
+      SwerveConstants.driveKI,
+      SwerveConstants.driveKD,
+      new TrapezoidProfile.Constraints(0.5, SwerveConstants.dMaxAccel),
+      0.02);
   private TalonFX shooterLeft = new TalonFX(shooterConstants.shooterLeft);
   private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
   private TalonSRX hood = new TalonSRX(16);
@@ -60,7 +72,6 @@ public class Shooter extends SubsystemBase {
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Shooter() {
-
     // Sets distance conversion: (Wheel Diameter * PI) / PulsesPerRevolution
     //m_encoder.setDistancePerPulse(1.0 / 360.0);
     hood.configRemoteFeedbackFilter(55, RemoteSensorSource.CANCoder,0);
@@ -72,8 +83,6 @@ public class Shooter extends SubsystemBase {
     hood.configMotionCruiseVelocity(1);
     hood.configMotionAcceleration(0.2);
     hood.setControlFramePeriod(ControlFrame.Control_3_General, 100);
-    
-
 
 
     var talonFXConfigs = new TalonFXConfiguration();
@@ -113,7 +122,7 @@ public class Shooter extends SubsystemBase {
 
     // hood.getConfigurator().apply(motionMagicConfigs);
     // hood.getConfigurator().apply(slot0hoodConfigs); 
-    // hood.configAllSettings(SRXconfig);
+    hood.configAllSettings(SRXconfig);
     shooterLeft.getConfigurator().apply(slot0Configs);
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
@@ -266,6 +275,14 @@ System.out.println("Angle degrees " + angleDeg);
       setDifferentShooterRPMs(bottomRPM, topRPM);
   }
 
+  public double hoodEncoderPosition(double targetPosition) {
+    if(DriverStation.isEnabled()) {
+    double targetSpeed = -xController.calculate(hoodEncoder.getPosition().getValueAsDouble(), targetPosition);
+    return Math.min(targetSpeed, 0.5);
+    }
+    return 0.0;
+  }
+
   public void runHood(double speed) {
     hood.set(TalonSRXControlMode.PercentOutput, speed);
   }
@@ -299,7 +316,11 @@ System.out.println("Angle degrees " + angleDeg);
 
   @Override
   public void periodic() {
-    hood.set(ControlMode.MotionMagic, hoodPosition);
+    //hood.set(ControlMode.PercentOutput, hoodEncoderPosition(0.08));
+    System.out.println("hood power set to pid value: " + hoodEncoderPosition(0));
+
+
+
     //add lower hood if going under trench
     shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
 
@@ -310,6 +331,8 @@ System.out.println("Angle degrees " + angleDeg);
     SmartDashboard.putNumber("Shooter RPS Set To", shooterPower);
     SmartDashboard.putNumber("Real Shooter RPS ", shooterLeft.getVelocity().getValueAsDouble());
     SmartDashboard.putNumber("Hood Position ", hoodEncoder.getPosition().getValueAsDouble());
+      SmartDashboard.putNumber("Hood Motor? Position ", hood.getSelectedSensorPosition());
+
     SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
     SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
     SmartDashboard.putNumber("Hood Set to ", hoodPosition);
@@ -358,4 +381,3 @@ System.out.println("Angle degrees " + angleDeg);
 
   
 }
-

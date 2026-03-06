@@ -102,7 +102,7 @@ public class Constants {
         public static final int intakeID = 60;
         public static final int liftID = 14;
 
-        public static final double loweredIntake = 3.822754;
+        public static final double loweredIntake = 3.4;
         public static final double upIntake = 0;
     }
     

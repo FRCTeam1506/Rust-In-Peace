@@ -40,21 +40,7 @@ public class Turret extends SubsystemBase {
   DigitalInput zeroTurret = new DigitalInput(0); //CHECK THIS DIO PORT! IT MIGHT BE WRONG!
   //public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final CommandSwerveDrivetrain drivetrain; 
-
-  //Auto Aim To Hub 
-  double latency = 0.15; // Tuned constant
-  Translation2d futurePos;
-
-
-  double idealHorizontalSpeed = 1; //double idealHorizontalSpeed = ShooterTable.getSpeed(dist);
-  Translation2d robotVelVec;
-  Translation2d shotVec;
   double finalTurretAngle;
-  double newHorizontalSpeed;
-  double ticksPerDegree;
-
-
-  //double idealSpeed = getShooterSpeedForDistance(distance);
   
 
   boolean red;
@@ -67,7 +53,6 @@ public class Turret extends SubsystemBase {
   double goalRedY = 4.034536;
   double goalBlueX = -12; //Red Goal
   double goalBlueY = 4.034536;
-
 
   double theta;
   double angleToGoal;
@@ -274,7 +259,7 @@ public class Turret extends SubsystemBase {
     robotPose = drivetrain.getState().Pose;
     if(robotPose != null) {
         turretPose = robotPose.plus(turretOffset);
-        System.out.println("Success! Turret Pose: " + turretPose);
+        //System.out.println("Success! Turret Pose: " + turretPose);
 
     }
 

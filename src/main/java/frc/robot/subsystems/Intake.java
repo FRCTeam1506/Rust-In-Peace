@@ -24,10 +24,8 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake() {
     var talonFXConfigs = new TalonFXConfiguration();
-
-    //talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
     TalonFXConfiguration config = new TalonFXConfiguration();
+
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 80;
 
@@ -69,17 +67,16 @@ public class Intake extends SubsystemBase {
     intakeLift.setControl(m_motmag.withPosition(Pos));
   }
 
-  public void manualIntake(double speed) {
+  public void runIntakeLift(double speed) {
     intakeLift.set(speed);
   }
-
 
   public void hopper (double speed, double kickerSpeed) {
     hopper.set(speed);
     kicker.set(kickerSpeed);
   }
 
-  public void stopIntake() {
+  public void stopAllIntake() {
     hopper.set(0);
     kicker.set(0);
     intake.set(0);
