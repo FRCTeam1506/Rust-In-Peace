@@ -208,6 +208,9 @@ public class Turret extends SubsystemBase {
     setTurretToAngle(finalTurretAngle);
 
     switch (shootMode) {
+        case 0: //Keep turret at zero
+          turret.setControl(m_motmag.withPosition(0));
+          break;
         case 1: //Change goal based on robot position
             if(red == true) {
                 if (robotPoseX > redLine) {
@@ -279,7 +282,7 @@ public class Turret extends SubsystemBase {
             }
             break;
     
-        default:
+        default: //Anything else stop turret
             turret.set(0);
             break;
     }
@@ -305,5 +308,7 @@ public class Turret extends SubsystemBase {
     } else {
       goalBlueX = 4;
     }
+
+    Constants.shootMode = shootMode;
   }
 }

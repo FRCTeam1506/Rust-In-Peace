@@ -164,9 +164,15 @@ public class Shooter extends SubsystemBase {
   public void shoot(double speed) {
     //shooterLeft.set(shooterPower/100); //was speed
     //shooterRight.set(shooterPower/100);
-    shooterLeft.setControl(speedControl.withVelocity(-shooterPower));
-    shooterRight.setControl(speedControl.withVelocity(shooterPower));
+    if (Constants.shootMode > 0) {
+      shooterLeft.setControl(speedControl.withVelocity(-shooterPower));
+      shooterRight.setControl(speedControl.withVelocity(shooterPower));
+    } else {
+      shooterLeft.setControl(speedControl.withVelocity(speed));
+      shooterRight.setControl(speedControl.withVelocity(speed));
+    }
   }
+
 
   public void stopShooter() {
     shooterLeft.set(0); 
@@ -377,6 +383,11 @@ System.out.println("Angle degrees " + angleDeg);
 
 
     //mainShooterPower();
+    if (Constants.shootMode > 0) {
+      mainHoodAngle();
+    } else {
+      //ZERO HOOD HERE OR HAVE MANUAL OVERIDE
+    }
   }
 
   

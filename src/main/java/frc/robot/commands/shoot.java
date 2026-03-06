@@ -21,13 +21,13 @@ public class shoot extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       // new InstantCommand(() -> shooter.shoot(0.75)), //0.75
-      new InstantCommand(() -> shooter.shoot(1)),
+      new InstantCommand(() -> shooter.shoot(60)),
       new WaitCommand(1),
       new InstantCommand(() -> intake.hopper(0, -0.4)),
       new WaitCommand(0.25),
       new InstantCommand(() -> intake.hopper(0.6,-0.85)),
       // new InstantCommand(() -> shooter.shoot(0.75)) //0.5
-      new InstantCommand(() -> shooter.shoot(1))
+      new InstantCommand(() -> shooter.shoot(60))
     );
   }
 }

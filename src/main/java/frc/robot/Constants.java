@@ -9,6 +9,8 @@ import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class Constants {
 
+    public static int shootMode;
+
     public static double timeOfFlight;
 
     // public InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
