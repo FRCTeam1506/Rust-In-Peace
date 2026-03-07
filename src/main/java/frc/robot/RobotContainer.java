@@ -6,6 +6,7 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -21,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.shoot;
 import frc.robot.commands.shootmath;
@@ -50,6 +52,7 @@ public class RobotContainer {
     public final CommandXboxController testing = new CommandXboxController(2);
     public final CommandPS4Controller driver = new CommandPS4Controller(0);
     public final CommandXboxController operator = new CommandXboxController(1);
+    public final CommandXboxController SysID = new CommandXboxController(3);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -92,9 +95,9 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-testing.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-testing.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -183,6 +186,22 @@ public class RobotContainer {
 
         
         //SHOOT COMMAND
+
+        testing.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
+        testing.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
+
+        /*
+        * Joystick Y = quasistatic forward
+        * Joystick A = quasistatic reverse
+        * Joystick B = dynamic forward
+        * Joystick X = dyanmic reverse
+        */
+        SysID.y().whileTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        SysID.a().whileTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        SysID.b().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        SysID.x().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+        
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
         testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
     
@@ -194,20 +213,26 @@ public class RobotContainer {
         testing.leftStick().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
 
         //MANUAL SHOOTER HOOD
-        testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
-        testing.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        //testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        //testing.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
-        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.7)));
-        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.7)));
+        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.3)));
+        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.3)));
         testing.b().whileFalse(new InstantCommand(() -> shooter.stopHood()));
         testing.y().whileFalse(new InstantCommand(() -> shooter.stopHood()));
 
 
         //MANUAL SHOOTER POWER
-        //testing.povUp().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
-        testing.povUp().whileTrue(new InstantCommand(() -> shooter.setHood(0.1)));
+        testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
+        testing.povRight().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+        //testing.povUp().whileTrue(new InstantCommand(() -> shooter.setHood(0.1)));
+        //testing.povUp().whileFalse(new InstantCommand(() -> shooter.stopHood()));
+        testing.povUp().whileTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        testing.povDown().whileFalse(new InstantCommand(() -> shooter.stopHood()));
+        testing.povDown().whileTrue(new InstantCommand(() -> shooter.changeHoodDown()));
         testing.povUp().whileFalse(new InstantCommand(() -> shooter.stopHood()));
-        testing.povDown().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
+
+
 
         //RUN SHOOTER POWER
         // driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));

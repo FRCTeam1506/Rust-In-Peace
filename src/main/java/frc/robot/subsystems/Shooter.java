@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Volt;
+
 import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
@@ -11,44 +13,52 @@ import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.shooterConstants;
 
 public class Shooter extends SubsystemBase {
+  //HOOD ENCODER PID CONTROLLER SETUP:
   double xVelocity;
   private final ProfiledPIDController xController =
   new ProfiledPIDController(
-      1,
+      25,
       SwerveConstants.driveKI,
       SwerveConstants.driveKD,
-      new TrapezoidProfile.Constraints(0.5, SwerveConstants.dMaxAccel),
+      new TrapezoidProfile.Constraints(5, SwerveConstants.dMaxAccel),
       0.02);
+  //SHOOTER CONTROLLER SETUP: (WAS USED TO TRY AND MAKE SHOOTER RPM LESS VARIABLE):
+  // private final ProfiledPIDController shooterController =
+  // new ProfiledPIDController(
+  //     200,
+  //     1,
+  //     1,
+  //     new TrapezoidProfile.Constraints(5, SwerveConstants.dMaxAccel),
+  //     0.02);
   private TalonFX shooterLeft = new TalonFX(shooterConstants.shooterLeft);
   private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
   private TalonSRX hood = new TalonSRX(16);
   private CANcoder hoodEncoder = new CANcoder(55);
 
   double shooterPower = 50;
-  double hoodPosition;
+  double hoodPosition = 0.0;
 
   public static double shooterRPS;
   public static double wheelSurfaceSpeed;
@@ -57,6 +67,7 @@ public class Shooter extends SubsystemBase {
   public static double hoodAngleRadians;
   public static double vX;
   public static double calculatedTOF;
+  public double setPoint;
 
   final VelocityVoltage speedControl = new VelocityVoltage(12);
 
@@ -68,6 +79,7 @@ public class Shooter extends SubsystemBase {
 
 
   double mainShooterRPS, mainHoodAngle;
+  private final VoltageOut m_voltReq = new VoltageOut(0.0);
 
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
@@ -83,7 +95,6 @@ public class Shooter extends SubsystemBase {
     hood.configMotionCruiseVelocity(1);
     hood.configMotionAcceleration(0.2);
     hood.setControlFramePeriod(ControlFrame.Control_3_General, 100);
-
 
     var talonFXConfigs = new TalonFXConfiguration();
     TalonSRXConfiguration SRXconfig = new TalonSRXConfiguration();
@@ -103,18 +114,18 @@ public class Shooter extends SubsystemBase {
     var slot0Configs = talonFXConfigs.Slot0;
     var slot0SRXconfig = SRXconfig.slot0;
 
-    slot0SRXconfig.kP = 10; //2.5
+    slot0SRXconfig.kP = 2.5; //2.5
     slot0SRXconfig.kI = 0;
     slot0SRXconfig.kD = 0.25;
 
-    slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
-    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
+    slot0Configs.kS = 0.24; // add 0.24 V to overcome friction //0.24
+    //slot0Configs.kV = 0.004; // apply 12 V for a target velocity of 100 rps //0.12
+    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps //0.12
+
     // PID runs on position
     slot0Configs.kP = 100; //2.5
     slot0Configs.kI = 0;
     slot0Configs.kD = 0.25;
-
-    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
 
     SRXconfig.slot0 = slot0SRXconfig;
   
@@ -127,45 +138,41 @@ public class Shooter extends SubsystemBase {
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
-    finalHoodPosition.put(1.68, 0.0); //somewhat close to the hub
-    finalHoodPosition.put(2.31, 0.0); // closer to the climbing rack
-    finalHoodPosition.put(2.87, -0.64); //at the climbing rack
-    finalHoodPosition.put(3.94, -1.24); //back against the back wall
-    finalHoodPosition.put(4.27, -1.1865234375); //in the square thing
-    finalHoodPosition.put(5.03, -1.66796875); //in the back corner
-    finalHoodPosition.put(3.23, -0.66); //auton starting point
+    finalHoodPosition.put(1.35, Constants.shooterConstants.hoodMinPosition); //somewhat close to the hub
+    finalHoodPosition.put(2.54, -0.005); //at the climbing rack
+    finalHoodPosition.put(2.86, 0.01); //at the back wall
+    finalHoodPosition.put(3.98, 0.03); //back against the back wall
+    finalHoodPosition.put(4.11, 0.035); //in the square thing
+    //finalHoodPosition.put(5.03, -1.66796875); //in the back corner
+    //finalHoodPosition.put(3.23, -0.66); //auton starting point
 
-
-
-
-    finalShooterRPS.put(1.68, 49.0);
-    finalShooterRPS.put(2.31, 53.0);
-    finalShooterRPS.put(2.87, 65.0);
-    finalShooterRPS.put(3.94, 76.0);// consider lowering because it is overshooting
-    finalShooterRPS.put(4.27, 75.0);
-    finalShooterRPS.put(5.03, 83.0);
+    finalShooterRPS.put(1.35, 51.0);
+    finalShooterRPS.put(2.54, 78.0);
+    finalShooterRPS.put(2.86, 90.0);
+    finalShooterRPS.put(3.98, 90.0);// consider lowering because it is overshooting
+    finalShooterRPS.put(4.11, 95.0);
+    //finalShooterRPS.put(5.03, 83.0);
     //finalShooterRPS.put(3.23, 70);
 
-
-
-
-    timeOfFlight.put(1.68, 1.0);
-    timeOfFlight.put(2.31, 1.12);
-    timeOfFlight.put(2.87, 1.4);
-    timeOfFlight.put(3.94, 1.4);
-    timeOfFlight.put(4.27, 1.5);
-    timeOfFlight.put(5.03, 1.55);
+    timeOfFlight.put(1.35, 0.95);
+    timeOfFlight.put(2.54, 1.15);
+    timeOfFlight.put(2.86, 1.2);
+    timeOfFlight.put(3.98, 1.3);
+    timeOfFlight.put(4.11, 1.2);
+    //timeOfFlight.put(5.03, 1.55);
     //timeOfFlight.put(3.23, 1.55);
-
-
-
   }
 
   public void shoot(double speed) {
-    //shooterLeft.set(shooterPower/100); //was speed
-    //shooterRight.set(shooterPower/100);
-    shooterLeft.setControl(speedControl.withVelocity(-shooterPower));
-    shooterRight.setControl(speedControl.withVelocity(shooterPower));
+    //shooterLeft.set(shooterPower/100); //manual adjust
+    //shooterRight.set(shooterPower/100); manual adjust
+    //shooterLeft.set((shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
+    //shooterRight.set(-(shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
+
+    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
+    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
+    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //auto power
+    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //auto power
   }
 
   public void stopShooter() {
@@ -173,9 +180,9 @@ public class Shooter extends SubsystemBase {
     shooterRight.set(0);
   }
 
-  public void manualShooterSPEED() {
-    shooterLeft.set(shooterPower/100);
-    shooterRight.set(shooterPower/100);
+  public void manualShooterSPEED(double speed) {
+    shooterLeft.set(-speed);
+    shooterRight.set(speed);
   }
 
   public void shootSpeed(double speed) {
@@ -208,21 +215,18 @@ public class Shooter extends SubsystemBase {
   }
 
   public void changeHoodUp() {
-    // hoodPosition += 0.05;
-    // hood.set(ControlMode.Position, hoodPosition);
-    hood.set(TalonSRXControlMode.Position, 0.5);
+    hoodPosition += 0.005;
+  }
 
-    
-
+  public void changeHoodDown() {
+  
+    hoodPosition -= 0.005;
   }
 
   public void hoodLow() {
       hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
   }
-  public void changeHoodDown() {
-    hoodPosition -= 0.05;
-    hood.set(TalonSRXControlMode.Position, hoodPosition);
-  }
+  
 
 
 public static double hoodDegToMotorRot(double angleDeg) {
@@ -258,14 +262,18 @@ System.out.println("Angle degrees " + angleDeg);
 }
 
   public void mainHoodAngle() {
-    if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-      hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
-    } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) {
-      hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
-    } else {
-      hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
-      //hood.setControl(m_motmag.withPosition(mainHoodAngle));
-    }
+    // if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMaxPosition) { //
+    //   //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
+    //   hoodPosition = shooterConstants.hoodMinPosition;
+    // } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMinPosition) {
+    //   //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
+    //   hoodPosition = shooterConstants.hoodMaxPosition;
+    // } else {
+    //   hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
+    //   hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+    //   //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      
+    // }
     //hood.setControl(m_motmag.withPosition(hoodAngleDegrees()));
   }
 
@@ -314,10 +322,49 @@ System.out.println("Angle degrees " + angleDeg);
     return calculatedTOF;
   }
 
+  private final SysIdRoutine m_sysIdRoutine =
+   new SysIdRoutine(
+      new SysIdRoutine.Config(
+         null,        // Use default ramp rate (1 V/s)
+         Voltage.ofBaseUnits(4, Volt), // Reduce dynamic step voltage to 4 to prevent brownout
+         null,        // Use default timeout (10 s)
+         // Log state with Phoenix SignalLogger class
+         (state) -> SignalLogger.writeString("state", state.toString())
+      ),
+      new SysIdRoutine.Mechanism(
+         (volts) -> shooterLeft.setControl(m_voltReq.withOutput(volts.in(Volt))),
+         null,
+         this
+      )
+   );
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.quasistatic(direction);
+    }
+
+    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return m_sysIdRoutine.dynamic(direction);
+    }
+
   @Override
   public void periodic() {
-    //hood.set(ControlMode.PercentOutput, hoodEncoderPosition(0.08));
-    System.out.println("hood power set to pid value: " + hoodEncoderPosition(0));
+    hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+    //mainHoodAngle();
+    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+      //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
+      hoodPosition = shooterConstants.hoodMinPosition;
+    } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+      //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
+      hoodPosition = shooterConstants.hoodMaxPosition;
+    } else {
+      hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
+      hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+      //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+    }
+
+    setPoint = hoodEncoderPosition(hoodPosition);
+    hood.set(ControlMode.PercentOutput, setPoint);
+    System.out.println("hood power set to pid value: " + setPoint);
 
 
 
@@ -336,9 +383,6 @@ System.out.println("Angle degrees " + angleDeg);
     SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
     SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
     SmartDashboard.putNumber("Hood Set to ", hoodPosition);
-
-
-
 
     // SmartDashboard.putNumber("Shooter RPS ", shooterRight.getvelo);
 
@@ -373,7 +417,6 @@ System.out.println("Angle degrees " + angleDeg);
     // shoot(shooterConstants.shooterPower);
 
 
-    //mainHoodAngle();
 
 
     //mainShooterPower();

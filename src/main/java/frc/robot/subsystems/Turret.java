@@ -311,9 +311,9 @@ public class Turret extends SubsystemBase {
 
     
     switch (shootMode) {
-      // case 0:
-      //   Turret.set(0);
-      //   break;
+      case 0:
+        Turret.set(0);
+        break;
       case 1: //AIM ONLY TO GOALS
         if (red == true) {
           goalLocation = new Translation2d(goalRedX, goalRedY);
@@ -386,21 +386,14 @@ public class Turret extends SubsystemBase {
           
         }
           break;
-        default:
-          Turret.set(0);
-          break;
-
-
-      
-        
     }
 
 
-    // if (shootMode > 4) {
-    //   shootMode = 4;
-    // } else if (shootMode < 0) {
-    //   shootMode = 0;
-    // }
+    if (shootMode > 4) {
+      shootMode = 4;
+    } else if (shootMode < 0) {
+      shootMode = 0;
+    }
     SmartDashboard.putNumber("ShootMode: ", shootMode);
 
     //System.out.println("shoot mode:" + shootMode);
