@@ -162,6 +162,11 @@ public class RobotContainer {
         operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
         operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntake()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
+        operator.povLeft().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)).alongWith(new InstantCommand(() -> intake.hopper(0.6, -0.85))));
+        operator.povRight().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)).alongWith(new InstantCommand(() -> intake.hopper(0.6, -0.85))));
+        operator.povLeft().whileFalse(new InstantCommand(() -> turret.manualTurret(0)).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
+        operator.povRight().whileFalse(new InstantCommand(() -> turret.manualTurret(0)).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
+
         operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.shootSpeed(65.0))));
         operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
         

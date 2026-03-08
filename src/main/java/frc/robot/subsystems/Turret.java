@@ -143,11 +143,13 @@ public class Turret extends SubsystemBase {
   public void rotateTurret(double turretSpeed) {
     turret.set(turretSpeed);
   }
+  public void manualTurret (double speed) {
+    if (Constants.manualTurret = true) {
+      turret.set(speed);
+    }
+  }
   public void stopTurret() {
     turret.set(0);
-  }
-  public void manualTurret (double speed) {
-    turret.set(speed);
   }
 
   //Main Methods
@@ -218,7 +220,8 @@ public class Turret extends SubsystemBase {
     //Shoot mode
     switch (shootMode) {
         case 0: //Keep turret at zero
-          turret.setControl(m_motmag.withPosition(0));
+          //turret.setControl(m_motmag.withPosition(0));
+          Constants.manualTurret = true;
           break;
         case 1: //Change goal based on robot position
             if(red == true) {
@@ -256,6 +259,7 @@ public class Turret extends SubsystemBase {
                 }
                 
             }
+            Constants.manualTurret = false;
             break;
         case 2: //Goal only
             if (red == true) {
@@ -267,6 +271,7 @@ public class Turret extends SubsystemBase {
                 thetaX = goalLocation.getX() - vRobotX;
                 thetaY = goalLocation.getY() - vRobotY;
             }
+            Constants.manualTurret = false;
             break;
         case 3: //Aim to the left side for mailing DRIVER PERSPECTIVE
             if (red == true) {
@@ -278,6 +283,7 @@ public class Turret extends SubsystemBase {
             thetaX = goalLocation.getX() - vRobotX;
             thetaY = goalLocation.getY() - vRobotY;
             }
+            Constants.manualTurret = false;
             break;
         case 4: //Aim to the right side for mailing DRIVER PERSPECTIVE
             if (red == true) {
@@ -289,10 +295,12 @@ public class Turret extends SubsystemBase {
             thetaX = goalLocation.getX() - vRobotX;
             thetaY = goalLocation.getY() - vRobotY;
             }
+            Constants.manualTurret = false;
             break;
     
         default: //Anything else stop turret
             turret.set(0);
+            Constants.manualTurret = true;
             break;
     }
 
