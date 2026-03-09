@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -52,7 +53,7 @@ public class Autos {
         NamedCommands.registerCommand("Stop Shooter", new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
         //NamedCommands.registerCommand("Continuous Shooter", new RunCommand(null, null))
         // NamedCommands.registerCommand("Run Intake ", new ParallelDeadlineGroup(new WaitCommand(1.5), new InstantCommand( () -> intake.runIntake(0.5))));
-        NamedCommands.registerCommand("Run Intake", new InstantCommand( () -> intake.runIntake(0.5)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.loweredIntake))));
+        NamedCommands.registerCommand("Run Intake", new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         NamedCommands.registerCommand("Stop Intake", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.upIntake))));
         //NamedCommands.registerCommand("ZeroGyro", drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).withTimeout(0.05));
         NamedCommands.registerCommand("Climber Up", new InstantCommand(() -> climber.climberUp()));
@@ -60,7 +61,9 @@ public class Autos {
 
         NamedCommands.registerCommand("Shoot Mode 1", new InstantCommand(() -> Turret.shootMode = 1));
 
-        NamedCommands.registerCommand("Hood Low", new InstantCommand(() -> shooter.hoodLow()));
+        NamedCommands.registerCommand("Hood Low", new RepeatCommand(new InstantCommand(() -> shooter.hoodLow())).finallyDo(interrupted -> { 
+            shooter.automaticHood();
+        }));
 
         NamedCommands.registerCommand("Corner Shot", new CornerShot(shooter, intake));
 

@@ -68,6 +68,7 @@ public class Shooter extends SubsystemBase {
   public static double vX;
   public static double calculatedTOF;
   public double setPoint;
+  public boolean toggleManualHood;
 
   final VelocityVoltage speedControl = new VelocityVoltage(12);
 
@@ -138,11 +139,12 @@ public class Shooter extends SubsystemBase {
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
-    finalHoodPosition.put(1.35, Constants.shooterConstants.hoodMinPosition); //somewhat close to the hub
-    finalHoodPosition.put(2.54, -0.005); //at the climbing rack
-    finalHoodPosition.put(2.86, 0.01); //at the back wall
-    finalHoodPosition.put(3.98, 0.03); //back against the back wall
-    finalHoodPosition.put(4.11, 0.035); //in the square thing
+    finalHoodPosition.put(1.35, shooterConstants.hoodMinPosition); //somewhat close to the hub
+    finalHoodPosition.put(2.54, shooterConstants.hoodMinPosition + 0.03); //-0.005 old //at the climbing rack
+    finalHoodPosition.put(2.86, shooterConstants.hoodMinPosition + 0.045); //0.01 old //at the back wall
+    finalHoodPosition.put(3.98, shooterConstants.hoodMinPosition + 0.065); //0.03 old //back against the back wall
+    finalHoodPosition.put(4.11, shooterConstants.hoodMinPosition + 0.07); //0.035 //in the square thing
+    finalHoodPosition.put(3.15, shooterConstants.hoodMinPosition + 0.02); 
     //finalHoodPosition.put(5.03, -1.66796875); //in the back corner
     //finalHoodPosition.put(3.23, -0.66); //auton starting point
 
@@ -151,6 +153,8 @@ public class Shooter extends SubsystemBase {
     finalShooterRPS.put(2.86, 90.0);
     finalShooterRPS.put(3.98, 90.0);// consider lowering because it is overshooting
     finalShooterRPS.put(4.11, 95.0);
+    finalShooterRPS.put(3.15, 62.0);
+
     //finalShooterRPS.put(5.03, 83.0);
     //finalShooterRPS.put(3.23, 70);
 
@@ -169,8 +173,8 @@ public class Shooter extends SubsystemBase {
     //shooterLeft.set((shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
     //shooterRight.set(-(shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
 
-    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
-    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
+    //shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
+    //shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
     shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //auto power
     shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //auto power
   }
@@ -224,7 +228,13 @@ public class Shooter extends SubsystemBase {
   }
 
   public void hoodLow() {
-      hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
+      //hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
+      toggleManualHood = true;
+      hoodPosition = shooterConstants.hoodMinPosition;
+  }
+
+  public void automaticHood() {
+    toggleManualHood = false;
   }
   
 
@@ -244,7 +254,7 @@ public static double hoodDegToMotorRot(double angleDeg) {
 
 public void setShooterRPM(double shooterRPM) 
   {
-    shooterLeft.setControl(speedControl.withVelocity(shooterRPM));
+    shooterLeft.setControl(speedControl.withVelocity(-shooterRPM));
     shooterRight.setControl(speedControl.withVelocity(shooterRPM));  
   }
 
@@ -348,23 +358,30 @@ System.out.println("Angle degrees " + angleDeg);
 
   @Override
   public void periodic() {
-    hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+    if(toggleManualHood == true) {
+    }
+
+    if(toggleManualHood == false) {
+    
     //mainHoodAngle();
-    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
-      //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
-      hoodPosition = shooterConstants.hoodMinPosition;
-    } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-      //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
-      hoodPosition = shooterConstants.hoodMaxPosition;
-    } else {
-      hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
-      hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-      //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+        //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
+        hoodPosition = shooterConstants.hoodMinPosition;
+      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+        //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
+        hoodPosition = shooterConstants.hoodMaxPosition;
+      } else {
+        //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
+        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+        //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      }
     }
 
     setPoint = hoodEncoderPosition(hoodPosition);
     hood.set(ControlMode.PercentOutput, setPoint);
     System.out.println("hood power set to pid value: " + setPoint);
+    SmartDashboard.putNumber("Main Hood Position With PID", setPoint);
+    SmartDashboard.putBoolean("Toggle Manual Hood", toggleManualHood);
 
 
 

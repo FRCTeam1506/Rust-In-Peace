@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -148,11 +149,14 @@ public class RobotContainer {
         //TODO: TOGGLE TO MANUAL 
 
         //MANUAL TURRET
-        testing.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
+        //testing.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
         testing.x().whileFalse(new InstantCommand(() -> turret.stopTurret()));
 
         //testing.y().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.1)));
         //testing.y().whileFalse(new InstantCommand(() -> turret.stopTurret()));
+        testing.y().whileTrue(new RepeatCommand(new InstantCommand(() -> shooter.hoodLow())).finallyDo(interrupted -> { 
+            shooter.automaticHood();
+        }));
         
 
         //RUN MACROINTAKE
@@ -201,7 +205,7 @@ public class RobotContainer {
         SysID.b().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
         SysID.x().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
-        
+
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
         testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
     

@@ -81,8 +81,8 @@ public class Constants {
         public static final int shooterLeft = 62;
         public static final int shooterRight = 61;
         public static final int hood = 16;
-        public static final double hoodMaxPosition = 0.1;//set 0.0
-        public static final double hoodMinPosition = -0.035; //-2.5
+        public static final double hoodMaxPosition = 0.1;//set 0.0 //0.1
+        public static final double hoodMinPosition = hoodMaxPosition - 0.135; //-0.035
         public static final double wheelDiameterMeters = 0.115;
         public static final double kSlip = 0.85; //HOW MUCH THE WHEELS SLIP
         
@@ -91,8 +91,8 @@ public class Constants {
         public static double hoodPosition;
         public static double defaultHoodPosition = -0.6;
 
-        public static final double cornerShotRPM = 83.0;
-        public static final double cornerShotHoodAngle = -0.66;
+        public static final double cornerShotRPM = 90.0;
+        public static final double cornerShotHoodAngle = 0.03;
         public static final double cornerShotTurretAngle = 0; //consider doing position to make it easier, just for the corner shot
     }
 

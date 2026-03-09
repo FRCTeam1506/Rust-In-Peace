@@ -36,100 +36,82 @@ import frc.robot.Constants.turretConstants;
 import frc.robot.generated.TunerConstants;
 
 public class Turret extends SubsystemBase {
-  
-  DigitalInput zeroTurret = new DigitalInput(0); //CHECK THIS DIO PORT! IT MIGHT BE WRONG!
-  //public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private final CommandSwerveDrivetrain drivetrain; 
-  double finalTurretAngle;
-  
 
-  boolean red;
-  Optional<Alliance> alliance = DriverStation.getAlliance();
-  public static int shootMode = 4; //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
-
-
-  //Variables for getting angle to goal.
-  double goalRedX = 12; //Red Goal
-  double goalRedY = 4.034536;
-  double goalBlueX = -12; //Red Goal
-  double goalBlueY = 4.034536;
-
-  double theta;
-  double angleToGoal;
-  double turretAngleTarget;
-  double finalTurretPos;
-  double vRobotY;
-  double vRobotX;
-
-  //FIELD LOCATIONS:
-
-  //MAILING
-  //RED LINE
-  final double redLine = 11.5; //used to be 12.6, made it 11.5 for more accurate zone of when we want to do mailing funciton
-  final double middleY = 4;
-  final double blueLine = 4.1;
-
-  //RED
-  //RIGHT
-  final double goalRightRedY = 7.211;
-  final double goalRightRedX = 13.302;
-  //LEFT
-  final double goalLeftRedY = 0.8;
-  final double goalLeftRedX = 13.302;
-
-  //BLUE
-  //RIGHT
-  final double goalRightBlueY = 7.756;
-  final double goalRightBlueX = 3.097;
-  //LEFT
-  final double goalLeftBlueY = 3;
-  final double goalLeftBlueX = 0.8;
-
-
-
-  double preTheta;
-
-  Pose2d robotPose;
-  double robotPoseX;
-  double robotPoseY;
-
-  //InterpolatingDoubleTreeMap turretPos = new InterpolatingDoubleTreeMap();
-  double heading;
-  double turretAngle;
-
-  double testAngle;
-  double angleToPos;
-
-  Translation2d targetLocation;
-
-  Rotation2d fieldTargetAngle;
-  Rotation2d robotTargetAngle; 
-
-  Translation2d goalLocation = new Translation2d(0,0);
-  Translation2d targetVec;
-  Translation2d vRobotPose;
-  double dist, doubleDistance;
-
-  double thetaX, thetaY;
-  double toDegree;
-
-  double timeOffset;
-  private static final InterpolatingDoubleTreeMap hoodPosition = new InterpolatingDoubleTreeMap();
-  private static final InterpolatingDoubleTreeMap shooterPower = new InterpolatingDoubleTreeMap();
-
-  public final static CommandXboxController driver = new CommandXboxController(0);
-
-  Transform2d turretOffset = new Transform2d(-0.19, -0.14, new Rotation2d(0));
-  Pose2d turretPose = new Pose2d();
-  
-  /** Creates a new Turret. */
-    private TalonFX Turret = new TalonFX(Constants.turretConstants.turretID); 
+    private TalonFX turret = new TalonFX(turretConstants.turretID);
     final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
+    DigitalInput zeroTurret = new DigitalInput(0);
+
+    private final CommandSwerveDrivetrain drivetrain;
+
+    public static int shootMode = 1;
+    boolean red;
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+
+    //Positions
+    //Variables for getting angle to goal.
+    double goalRedX = 12; //Red Goal
+    double goalRedY = 4.034536;
+    double goalBlueX = -12; //Blue Goal
+    double goalBlueY = 4.034536;
+    Translation2d goalLocation = new Translation2d(0, 0);
+
+    //FIELD LOCATIONS:
+
+    final double redLine = 11.5; //used to be 12.6, made it 11.5 for more accurate zone of when we want to do mailing funciton
+    final double middleY = 4;
+    final double blueLine = 4.1;
+
+    final double goalRightRedY = 7.211;
+    final double goalRightRedX = 13.302;
+
+    final double goalLeftRedY = 0.8;
+    final double goalLeftRedX = 13.302;
+
+    final double goalRightBlueY = 7.756;
+    final double goalRightBlueX = 3.097;
+
+    final double goalLeftBlueY = 3;
+    final double goalLeftBlueX = 0.8;
+
+
+    //Math variables
+    double theta;
+    double thetaX, thetaY;
+    double angleToGoal;
+    double toDegree;
+    double turretAngleTarget;
+    double finalTurretPos;
+    double angleToPos;
+    double turretAngle;
+    double dist;
+    double finalTurretAngle;
+    Translation2d targetVec;
+
+    //Robot Poses
+    Pose2d robotPose;
+    double robotPoseX;
+    double robotPoseY;
+    double omega;
+    double heading;
+
+    Translation2d rotationalVelocityField;
+
+    //Virtual Robot Poses
+    double vRobotY;
+    double vRobotX;
+    double vRotationalRobotY;
+    double vRotationalRobotX;
+    double totalFieldVy;
+    double totalFieldVx;
+    Translation2d vRobotPose;
     
-    // private Encoder encoder = new Encoder(0, 0);
-  // double dx;
-  // double dy;
-  // Rotation2d fieldAngle;
+    //Turret offset
+    Transform2d turretOffset = new Transform2d(-0.19, -0.14, new Rotation2d(0));
+    Pose2d turretPose = new Pose2d();
+
+    //Extra
+    double flightTimeMultiplier = 1.3; //If turret doesn't offset enough. Tune this if needed
+
 
   public Turret(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
@@ -138,8 +120,6 @@ public class Turret extends SubsystemBase {
     } else {
       red = false;
     }
-
-    var talonFXConfigs = new TalonFXConfiguration();
 
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -154,49 +134,28 @@ public class Turret extends SubsystemBase {
 
     m_motmag.EnableFOC = true;
   
-    Turret.getConfigurator().apply(config);
-   
-    // flightTime.put(1.0, 1.0);
-    // flightTime.put(2.0, 1.5);
-    // flightTime.put(3.0, 1.75);
-    // flightTime.put(4.0, 2.0);
-    // flightTime.put(5.0, 2.5);
+    turret.getConfigurator().apply(config);
   }
 
+
+
+  //Non-Important Methods
   public void rotateTurret(double turretSpeed) {
-    Turret.set(turretSpeed);
+    turret.set(turretSpeed);
   }
-
+  // public void manualTurret (double speed) {
+  //   if (Constants.manualTurret = true) {
+  //     turret.set(speed);
+  //   }
+  // }
   public void stopTurret() {
-    Turret.set(0);
+    turret.set(0);
   }
 
-  public void setTurretPos(double pos) {
-    Turret.setPosition(pos);
-  }
-
+  //Main Methods
   public void zeroTurret() {
-    Turret.setPosition(-0.617187);
+    turret.setPosition(-0.617187);
     System.out.println("Zero");
-  }
-
-  public void fixedTurretPosition() {
-    // heading = drivetrain.getPigeon2().getYaw().getValueAsDouble() / 360;
-    // turretAngleTarget = 0 - heading;
-    // finalTurretPos = turretAngleTarget * 13.2;
-    // Turret.setControl(m_motmag.withPosition(finalTurretPos));
-    // System.out.println(finalTurretPos);
-  }
-
-
-  public void turretPosition(double goalX, double goalY) {
-      // theta = Math.atan((this.goalY - vRobotY) / (this.goalX - vRobotX));
-      // angleToGoal = 90 - theta;
-      // heading = drivetrain.getPigeon2().getYaw().getValueAsDouble() / 360;
-      // turretAngleTarget = angleToGoal - heading;
-      // finalTurretPos = turretAngleTarget * 13.2;
-      // Turret.setControl(m_motmag.withPosition(finalTurretPos));
-      // System.out.println(finalTurretPos);
   }
 
   public void shootModeChange(boolean up) {
@@ -209,200 +168,165 @@ public class Turret extends SubsystemBase {
 
   public void setTurretToAngle (double angle) {
     angleToPos = ((angle /360) * 13.2);
-    Turret.setControl(m_motmag.withPosition(angleToPos));
+    turret.setControl(m_motmag.withPosition(angleToPos));
     //System.out.println("set Turret angle to" + angle);
   }
 
-  public void manualTurret (double speed) {
-    Turret.set(speed);
-  }
-
-  /** Convert a desired turret angle (deg, robot-relative, 0 = robot forward) to motor rotations. */
-  private static double turretDegToMotorRot(double turretDeg) {
-    return (turretDeg / 360.0) * Constants.TurretMathConstants.MOTOR_ROT_PER_TURRET_ROT;
-  }
-
-  /**
-   * Aim turret at a FIELD-relative angle.
-   * The turret will automatically subtract robot heading to get robot-relative turret angle.
-   */
-  public void aimFieldAngle(Rotation2d aimFieldAngle) {
-    double robotHeadingDeg = drivetrain.getState().Pose.getRotation().getDegrees();
-    double aimFieldDeg = aimFieldAngle.getDegrees();
-
-    // robot-relative turret command: 0 deg = robot forward
-    double turretDeg = aimFieldDeg - robotHeadingDeg;
-
-    // Wrap to [-180, 180) first (stable), then clamp to your physical range.
-    turretDeg = MathUtil.inputModulus(turretDeg, -180.0, 180.0);
-    turretDeg = MathUtil.clamp(
-        turretDeg,
-        Constants.TurretMathConstants.MIN_TURRET_DEG,
-        Constants.TurretMathConstants.MAX_TURRET_DEG
-    );
-
-  Turret.setControl(m_motmag.withPosition(turretDegToMotorRot(turretDeg)));
-}
-
-  public Translation2d getGoalLocation() {
-    if (red == true) {
-          goalLocation = new Translation2d(goalRedX, goalRedY);
-    } else {
-          goalLocation = new Translation2d(goalBlueX, goalBlueY);
-    }
-    return goalLocation;
-  }
 
 
   @Override
   public void periodic() {
+    //Robot Pose and velocity
+    omega = drivetrain.getState().Speeds.omegaRadiansPerSecond;
     robotPose = drivetrain.getState().Pose;
-    if(robotPose != null) {
-        turretPose = robotPose.plus(turretOffset);
-        //System.out.println("Success! Turret Pose: " + turretPose);
-
-    }
-
-    SmartDashboard.putNumber("Shoot Mode ", shootMode);
-    //SmartDashboard.putNumber("Turret Angle Set To", finalTurretAngle);
-    //SmartDashboard.putNumber("Current Turret Angle", )
-    SmartDashboard.putNumber("Turret Position", Turret.getPosition().getValueAsDouble());
-    SmartDashboard.putBoolean("Turret Zero", zeroTurret.get());
-
-    
-    vRobotY = turretPose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * Constants.timeOfFlight * 1.1);
-    vRobotX = turretPose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * Constants.timeOfFlight * 1.1);
-    //vRobotY = drivetrain.getState().Pose.getY() + (drivetrain.getState().Speeds.vyMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*+ 0.2*/;
-    //vRobotX = drivetrain.getState().Pose.getX() + (drivetrain.getState().Speeds.vxMetersPerSecond * (Constants.timeOfFlight * 1.2)) /*- 0.2*/; //Added (Constants.timeOfFlight * 1.2) because the offset while driving wasn't enough
-
-
     robotPoseX = drivetrain.getState().Pose.getX();
     robotPoseY = drivetrain.getState().Pose.getY();
 
-    if (red == true) {
-      goalRedX = 12;
-    } else {
-      goalBlueX = 4;
-    }
-      // preTheta = (goalY - drivetrain.getState().Pose.getY()) / (goalX - drivetrain.getState().Pose.getX());
-      // theta = Math.atan(preTheta);
+    //Use this instead of drivetrain pose to account for tuuret offset and rotation of the robot. 
+    turretPose = drivetrain.getState().Pose.transformBy(turretOffset); 
+
+    //Virtual rotational pose
+    vRotationalRobotY = omega * turretOffset.getX();
+    vRotationalRobotX = -omega * turretOffset.getY();
+    rotationalVelocityField = new Translation2d(vRotationalRobotX, vRotationalRobotY).rotateBy(drivetrain.getState().Pose.getRotation());
+
+    //Add speed
+    totalFieldVy = drivetrain.getState().Speeds.vyMetersPerSecond + rotationalVelocityField.getY();
+    totalFieldVx = drivetrain.getState().Speeds.vxMetersPerSecond + rotationalVelocityField.getX();
+    
+    //Times time of flight
+    vRobotY = turretPose.getY() + (totalFieldVy * Constants.timeOfFlight * flightTimeMultiplier);
+    vRobotX = turretPose.getX() + (totalFieldVx * Constants.timeOfFlight * flightTimeMultiplier);
+    vRobotPose = new Translation2d(vRobotX, vRobotY);
+
+    //Math to get angle 
     heading = drivetrain.getState().Pose.getRotation().getDegrees();
     theta = Math.atan2(thetaY, thetaX);
     toDegree = Math.toDegrees(theta);
     turretAngle = toDegree - heading;
+
+    //Set min and max
     finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 85);
 
-    vRobotPose = new Translation2d(vRobotX, vRobotY);
+    //Set turret to angle
+    setTurretToAngle(finalTurretAngle);
+
+    //Get dist to goal
     targetVec = goalLocation.minus(vRobotPose);
     dist = targetVec.getNorm();
     Constants.distToGoal = dist;
     //System.out.println("Dist to goal" + dist);
 
-
-    //setTurretToAngle(finalTurretAngle);
-    SmartDashboard.putNumber("Turret Position ", Turret.getPosition().getValueAsDouble());
-    SmartDashboard.putNumber("Turret Target Angle", turretAngle);
-    SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
-   
-    
-    SmartDashboard.putBoolean("Zero Turret", zeroTurret.get());
-
-      //System.out.println("Robot X" + drivetrain.getState().Pose.getX());
-
-    
+    //Shoot mode
     switch (shootMode) {
-      case 0:
-        Turret.set(0);
-        break;
-      case 1: //AIM ONLY TO GOALS
-        if (red == true) {
-          goalLocation = new Translation2d(goalRedX, goalRedY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        } else {
-          goalLocation = new Translation2d(goalBlueX, goalBlueY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        }
-        break;
-    
-      case 2: //AIM TO LEFT SIDES FOR MAILING
-        if (red == true) {
-          goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        } else {
-          goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        }
-        break;
-
-      case 3: //AIM TO RIGHT SIDES FOR MAILING
-        if (red == true) {
-          goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        } else {
-          goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
-          thetaX = goalLocation.getX() - vRobotX;
-          thetaY = goalLocation.getY() - vRobotY;
-        }
-        break;
-      case 4: //ALL TOGETHER
-        if(red == true) {
-          if (robotPoseX > redLine) {
-            goalLocation = new Translation2d(goalRedX, goalRedY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-          }
-          if(robotPoseY < 4 && robotPoseX < redLine) {//left (from red perspective)
+        case 0: //Keep turret at zero
+          //turret.setControl(m_motmag.withPosition(0));
+          //Constants.manualTurret = true;
+          break;
+        case 1: //Change goal based on robot position
+            if(red == true) {
+                if (robotPoseX > redLine) {
+                    goalLocation = new Translation2d(goalRedX, goalRedY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                if(robotPoseY < 4 && robotPoseX < redLine) {//left (from red perspective)
+                    goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                if(robotPoseY > 4 && robotPoseX < redLine) { 
+                    goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                }
+                else { //blue
+                if (robotPoseX < blueLine) {
+                    goalLocation = new Translation2d(goalBlueX, goalBlueY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                if(robotPoseY < 4 && robotPoseX > blueLine) { //left (from red perspective)
+                    goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                if(robotPoseY > 4 && robotPoseX > blueLine) {
+                    goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
+                    thetaX = goalLocation.getX() - vRobotX;
+                    thetaY = goalLocation.getY() - vRobotY;
+                }
+                
+            }
+            //Constants.manualTurret = false;
+            break;
+        case 2: //Goal only
+            if (red == true) {
+                goalLocation = new Translation2d(goalRedX, goalRedY);
+                thetaX = goalLocation.getX() - vRobotX;
+                thetaY = goalLocation.getY() - vRobotY;
+            } else {
+                goalLocation = new Translation2d(goalBlueX, goalBlueY);
+                thetaX = goalLocation.getX() - vRobotX;
+                thetaY = goalLocation.getY() - vRobotY;
+            }
+            //Constants.manualTurret = false;
+            break;
+        case 3: //Aim to the left side for mailing DRIVER PERSPECTIVE
+            if (red == true) {
             goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
             thetaX = goalLocation.getX() - vRobotX;
             thetaY = goalLocation.getY() - vRobotY;
-          }
-          if(robotPoseY > 4 && robotPoseX < redLine) { 
-            goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-          }
-        }
-        else { //blue
-          if (robotPoseX < blueLine) {
-            goalLocation = new Translation2d(goalBlueX, goalBlueY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-          }
-          if(robotPoseY < 4 && robotPoseX > blueLine) { //left (from red perspective)
+            } else {
             goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
             thetaX = goalLocation.getX() - vRobotX;
             thetaY = goalLocation.getY() - vRobotY;
-          }
-          if(robotPoseY > 4 && robotPoseX > blueLine) {
+            }
+            //Constants.manualTurret = false;
+            break;
+        case 4: //Aim to the right side for mailing DRIVER PERSPECTIVE
+            if (red == true) {
+            goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
+            thetaX = goalLocation.getX() - vRobotX;
+            thetaY = goalLocation.getY() - vRobotY;
+            } else {
             goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
             thetaX = goalLocation.getX() - vRobotX;
             thetaY = goalLocation.getY() - vRobotY;
-          }
-          
-        }
-          break;
+            }
+            //Constants.manualTurret = false;
+            break;
+    
+        default: //Anything else stop turret
+            turret.set(0);
+            //Constants.manualTurret = true;
+            break;
     }
 
-
-    if (shootMode > 4) {
-      shootMode = 4;
-    } else if (shootMode < 0) {
-      shootMode = 0;
-    }
-    SmartDashboard.putNumber("ShootMode: ", shootMode);
-
-    //System.out.println("shoot mode:" + shootMode);
-    // if (Turret.getPosition().getValueAsDouble() > 6.5 || Turret.getPosition().getValueAsDouble() < -6.5) {
-    //   Turret.set(0);
-    // }
-    //System.out.println("Zero" + zeroTurret.get());
+    //Print out info
+    SmartDashboard.putNumber("Turret Position ", turret.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("Turret Target Angle", turretAngle);
+    SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
+    SmartDashboard.putBoolean("Zero Turret", zeroTurret.get());
+    SmartDashboard.putNumber("Shoot Mode ", shootMode);
+    SmartDashboard.putNumber("Dist to goal", dist);
+    //SmartDashboard.putNumber("Turret Angle Set To", finalTurretAngle); 
+  
+  
+    //Zero turret if sensor is triggered
     if (zeroTurret.get() == false) {
       zeroTurret();
     }
+
+    //Check red vs blue alliance and change for different targets
+    if (red == true) {
+      goalRedX = 12;
+    } else {
+      goalBlueX = 4;
+    }
+
+    //Set shoot mode in constants for shooter subsytem to get
+    //Constants.shootMode = shootMode;
   }
 }

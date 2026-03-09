@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.subsystems.Shooter;
 
 // import org.ironmaple.simulation.SimulatedArena;
 
@@ -48,6 +49,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotPeriodic() {
+    
     CommandScheduler.getInstance().run(); 
 
 
@@ -69,16 +71,23 @@ public class Robot extends TimedRobot {
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_RIGHT, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_BACK, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
+      System.out.println(driveState.Pose.getRotation().getDegrees());
       
-      var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
-      var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
-      var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
+      //var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
+      //var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
+      //var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
+
+      var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_BACK);
+      var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_LEFT);
+      var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_RIGHT);
 
 
       if (llMeasurement_left != null && llMeasurement_left.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_LEFT) > 0.33) {
 
         // Pose2d pose = new Pose2d(llMeasurement.pose.getX(), llMeasurement.pose.getY(), llMeasurement.pose.getRotation().minus(new Rotation2d(0))); //minus rotation2d(math.pi)
+
         m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_left.pose, llMeasurement_left.timestampSeconds);
+
         //System.out.println("left " + llMeasurement_left.pose);
         //System.out.println("heading " + headingDeg);
 
@@ -131,6 +140,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    m_robotContainer.shooter.automaticHood();
+
     if(DriverStation.getMatchTime() <= 10) { //this means that we are at home
       m_robotContainer.intake.zeroIntake();
       //m_robotContainer.shooter.zeroHood();
