@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Volt;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -72,7 +74,7 @@ public class Shooter extends SubsystemBase {
   public boolean toggleManualHood;
 
   final VelocityVoltage speedControl = new VelocityVoltage(12);
-  final VelocityTorqueCurrentFOC speedControl2 = new VelocityTorqueCurrentFOC(12);
+  final VelocityTorqueCurrentFOC speedControl2 = new VelocityTorqueCurrentFOC(0).withSlot(1);
 
 
   //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
@@ -101,6 +103,7 @@ public class Shooter extends SubsystemBase {
 
     var talonFXConfigs = new TalonFXConfiguration();
     TalonSRXConfiguration SRXconfig = new TalonSRXConfiguration();
+    TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
 
     talonFXConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
     talonFXConfigs.CurrentLimits.StatorCurrentLimit = 80;
@@ -121,16 +124,27 @@ public class Shooter extends SubsystemBase {
     slot0SRXconfig.kI = 0;
     slot0SRXconfig.kD = 0.25;
 
-    slot0Configs.kS = 0.24; // add 0.24 V to overcome friction //0.24
+    slot0Configs.kS = 2.5;//0.24 // add 0.24 V to overcome friction //0.24
     //slot0Configs.kV = 0.004; // apply 12 V for a target velocity of 100 rps //0.12
-    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps //0.12
+    slot0Configs.kV = 0;//0.12 // apply 12 V for a target velocity of 100 rps //0.12
 
     // PID runs on position
-    slot0Configs.kP = 100; //2.5
+    slot0Configs.kP = 5;//100 //2.5
     slot0Configs.kI = 0;
-    slot0Configs.kD = 0.25;
+    slot0Configs.kD = 0;//0.25
 
     SRXconfig.slot0 = slot0SRXconfig;
+
+
+    shooterConfig.Slot1.kS = 2.5;
+    shooterConfig.Slot1.kP = 5;
+    shooterConfig.Slot1.kI = 0;
+    shooterConfig.Slot1.kD = 0;
+    shooterConfig.TorqueCurrent.withPeakForwardTorqueCurrent(Amps.of(40)).withPeakReverseTorqueCurrent(Amps.of(-40));
+
+
+
+    
   
     m_motmag.EnableFOC = true;
 
@@ -141,30 +155,46 @@ public class Shooter extends SubsystemBase {
     shooterRight.getConfigurator().apply(slot0Configs);
     //hood.getConfigurator().apply(config);
 
-    finalHoodPosition.put(1.35, shooterConstants.hoodMinPosition); //somewhat close to the hub
-    finalHoodPosition.put(2.54, shooterConstants.hoodMinPosition + 0.03); //-0.005 old //at the climbing rack
-    finalHoodPosition.put(2.86, shooterConstants.hoodMinPosition + 0.045); //0.01 old //at the back wall
-    finalHoodPosition.put(3.98, shooterConstants.hoodMinPosition + 0.065); //0.03 old //back against the back wall
-    finalHoodPosition.put(4.11, shooterConstants.hoodMinPosition + 0.07); //0.035 //in the square thing
-    finalHoodPosition.put(3.15, shooterConstants.hoodMinPosition + 0.02); 
+    finalHoodPosition.put(1.42, shooterConstants.hoodMinPosition);
+    finalHoodPosition.put(1.91, shooterConstants.hoodMinPosition); //somewhat close to the hub
+    finalHoodPosition.put(2.54, shooterConstants.hoodMinPosition + 0.02); //-0.005 old //at the climbing rack
+    finalHoodPosition.put(3.25, shooterConstants.hoodMinPosition + 0.035);
+    finalHoodPosition.put(3.67, shooterConstants.hoodMinPosition + 0.05); //0.01 old //at the back wall
+
+    finalHoodPosition.put(5.2, shooterConstants.hoodMaxPosition); //Full field
+    // finalHoodPosition.put(3.25, shooterConstants.hoodMinPosition + 0.035); //0.03 old //back against the back wall
+    // finalHoodPosition.put(4.11, shooterConstants.hoodMinPosition + 0.07); //0.035 //in the square thing
+    // finalHoodPosition.put(3.15, shooterConstants.hoodMinPosition + 0.02); 
+
+
+
     //finalHoodPosition.put(5.03, -1.66796875); //in the back corner
     //finalHoodPosition.put(3.23, -0.66); //auton starting point
 
-    finalShooterRPS.put(1.35, 51.0);
-    finalShooterRPS.put(2.54, 78.0);
-    finalShooterRPS.put(2.86, 90.0);
-    finalShooterRPS.put(3.98, 90.0);// consider lowering because it is overshooting
-    finalShooterRPS.put(4.11, 95.0);
-    finalShooterRPS.put(3.15, 62.0);
+    finalShooterRPS.put(1.42, 46.0);
+    finalShooterRPS.put(1.91, 54.0);
+    finalShooterRPS.put(2.54, 65.0);
+    finalShooterRPS.put(3.25, 82.0);
+    finalShooterRPS.put(3.67, 91.0);
+
+    finalShooterRPS.put(5.2, 95.0); //Full field
+    // finalShooterRPS.put(3.25, 82.0);// consider lowering because it is overshooting
+    // finalShooterRPS.put(4.11, 95.0);
+    // finalShooterRPS.put(3.15, 62.0);
 
     //finalShooterRPS.put(5.03, 83.0);
     //finalShooterRPS.put(3.23, 70);
 
-    timeOfFlight.put(1.35, 0.95);
-    timeOfFlight.put(2.54, 1.15);
-    timeOfFlight.put(2.86, 1.2);
-    timeOfFlight.put(3.98, 1.3);
-    timeOfFlight.put(4.11, 1.2);
+    timeOfFlight.put(1.42, 1.08);
+    timeOfFlight.put(1.91, 1.12);
+    timeOfFlight.put(2.54, 1.2);
+    timeOfFlight.put(3.25, 1.25);
+    timeOfFlight.put(3.98, 1.2);
+
+    timeOfFlight.put(5.2, 1.75); //Full field
+    // timeOfFlight.put(4.11, 1.2);
+
+
     //timeOfFlight.put(5.03, 1.55);
     //timeOfFlight.put(3.23, 1.55);
   }
@@ -175,10 +205,14 @@ public class Shooter extends SubsystemBase {
     //shooterLeft.set((shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
     //shooterRight.set(-(shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
 
-    //shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
-    //shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
+    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
+    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
     shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //auto power
     shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //auto power
+  }
+
+  public void cornerShot() {
+
   }
 
   public void stopShooter() {
@@ -361,24 +395,23 @@ System.out.println("Angle degrees " + angleDeg);
 
   @Override
   public void periodic() {
-    // if(toggleManualHood == true) {
-    // }
+    if(toggleManualHood == true) {
+    }
 
-    // if(toggleManualHood == false) {
+    if(toggleManualHood == false) {
     
-    //mainHoodAngle();
-      // if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
-      //   //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
-      //   hoodPosition = shooterConstants.hoodMinPosition;
-      // } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-      //   //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
-      //   hoodPosition = shooterConstants.hoodMaxPosition;
-      // } else {
-      //   //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
-      //   hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-      //   //hood.setControl(m_motmag.withPosition(mainHoodAngle));
-      // }
-    //}
+      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+        //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
+        hoodPosition = shooterConstants.hoodMinPosition;
+      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+        //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
+        hoodPosition = shooterConstants.hoodMaxPosition;
+      } else {
+        //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
+        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+        //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      }
+    }
 
     setPoint = hoodEncoderPosition(hoodPosition);
     hood.set(ControlMode.PercentOutput, setPoint);

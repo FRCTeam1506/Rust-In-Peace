@@ -8,36 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 8.114736091297019,
-        "y": 0.22456490726840794
+        "x": 7.67990361445783,
+        "y": 0.7457590361445796
       },
       "isLocked": false,
       "linkedName": "RightBasicSecondEnd"
     },
     {
       "anchor": {
-        "x": 4.1939638554216865,
+        "x": 3.997265060240964,
         "y": 0.6146265060240967
       },
       "prevControl": {
-        "x": 4.7949879518072285,
-        "y": 0.10102409638554277
-      },
-      "nextControl": {
-        "x": 4.003905993629038,
-        "y": 0.777039587919633
-      },
-      "isLocked": false,
-      "linkedName": "Right Start"
-    },
-    {
-      "anchor": {
-        "x": 2.620373493975903,
-        "y": 2.2865662650602405
-      },
-      "prevControl": {
-        "x": 2.685939759036144,
-        "y": 1.7073975903614462
+        "x": 5.002614457831324,
+        "y": 0.505349397590362
       },
       "nextControl": null,
       "isLocked": false,
@@ -46,12 +30,8 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.35,
-      "rotationDegrees": 180.0
-    },
-    {
-      "waypointRelativePos": 0.9716287215411499,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -59,7 +39,7 @@
   "eventMarkers": [
     {
       "name": "Stop Intake",
-      "waypointRelativePos": 0.26056338028168846,
+      "waypointRelativePos": 0.15,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -74,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -135.0
+    "rotation": -90.0
   },
   "reversed": false,
   "folder": "Right",

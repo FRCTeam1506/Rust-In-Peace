@@ -11,6 +11,18 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Run Intake"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
+          }
+        },
+        {
           "type": "deadline",
           "data": {
             "commands": [
@@ -30,6 +42,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Stop Intake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Right Third"
@@ -38,7 +56,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Run Shooter"
+            "name": "Corner Shot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 4.0
           }
         }
       ]

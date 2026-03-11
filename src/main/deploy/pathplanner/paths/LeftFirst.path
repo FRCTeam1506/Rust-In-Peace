@@ -16,28 +16,12 @@
     },
     {
       "anchor": {
-        "x": 7.041,
-        "y": 7.340827389443652
+        "x": 7.406710843373492,
+        "y": 7.4553734939759035
       },
       "prevControl": {
-        "x": 6.1531321438542745,
-        "y": 7.404246522025491
-      },
-      "nextControl": {
-        "x": 7.76556490727532,
-        "y": 7.2890727532097
-      },
-      "isLocked": false,
-      "linkedName": null
-    },
-    {
-      "anchor": {
-        "x": 7.843819277108434,
-        "y": 6.756
-      },
-      "prevControl": {
-        "x": 7.805804981044949,
-        "y": 7.0030929244126545
+        "x": 7.089807228915661,
+        "y": 7.4278593575443
       },
       "nextControl": null,
       "isLocked": false,
@@ -56,7 +40,7 @@
     },
     {
       "name": "Run Intake",
-      "waypointRelativePos": 1.091869918699184,
+      "waypointRelativePos": 0.55,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -70,7 +54,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 1.5,
+    "velocity": 0.0,
     "rotation": -90.0
   },
   "reversed": false,

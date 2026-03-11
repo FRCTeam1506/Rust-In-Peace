@@ -61,16 +61,16 @@ public class Turret extends SubsystemBase {
     final double middleY = 4;
     final double blueLine = 4.1;
 
-    final double goalRightRedY = 7.211;
+    final double goalRightRedY = 6;//7.211
     final double goalRightRedX = 13.302;
 
-    final double goalLeftRedY = 0.8;
+    final double goalLeftRedY = 2; //0.8
     final double goalLeftRedX = 13.302;
 
-    final double goalRightBlueY = 7.756;
+    final double goalRightBlueY = 6; //7.756
     final double goalRightBlueX = 3.097;
 
-    final double goalLeftBlueY = 3;
+    final double goalLeftBlueY = 2; //3
     final double goalLeftBlueX = 0.8;
 
 
@@ -154,7 +154,7 @@ public class Turret extends SubsystemBase {
 
   //Main Methods
   public void zeroTurret() {
-    turret.setPosition(-0.617187);
+    turret.setPosition(-0.525); //-0.6171807
     System.out.println("Zero");
   }
 
