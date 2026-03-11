@@ -71,15 +71,16 @@ public class Robot extends TimedRobot {
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_RIGHT, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
       LimelightHelpers.SetRobotOrientation(VisionConstants.LL_BACK, driveState.Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
-      System.out.println(driveState.Pose.getRotation().getDegrees());
+      //System.out.println(driveState.Pose.getRotation().getDegrees());
       
-      //var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
+      var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
       //var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
-      //var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
+      var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
 
       var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_BACK);
-      var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_LEFT);
-      var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_RIGHT);
+      // var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_LEFT);
+      // var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_RIGHT);
+      //For some reason left and right cameras the MT2 is fixed but not on the back
 
 
       if (llMeasurement_left != null && llMeasurement_left.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_LEFT) > 0.33) {

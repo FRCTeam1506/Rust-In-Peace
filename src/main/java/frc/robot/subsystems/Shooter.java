@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -71,6 +72,7 @@ public class Shooter extends SubsystemBase {
   public boolean toggleManualHood;
 
   final VelocityVoltage speedControl = new VelocityVoltage(12);
+  final VelocityTorqueCurrentFOC speedControl2 = new VelocityTorqueCurrentFOC(12);
 
 
   //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
@@ -89,7 +91,7 @@ public class Shooter extends SubsystemBase {
     //m_encoder.setDistancePerPulse(1.0 / 360.0);
     hood.configRemoteFeedbackFilter(55, RemoteSensorSource.CANCoder,0);
     hood.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
-    hood.config_kP(0, 1, 10); // Adjust PID values
+    hood.config_kP(0, 3, 10); // Adjust PID values
     hood.config_kI(0, 1, 10);
     hood.config_kD(0, 0, 10);
     hood.config_kF(0, 0.0, 10);
@@ -229,6 +231,7 @@ public class Shooter extends SubsystemBase {
 
   public void hoodLow() {
       //hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
+      System.out.println("RUNNING HOOD LOW!");
       toggleManualHood = true;
       hoodPosition = shooterConstants.hoodMinPosition;
   }
@@ -358,28 +361,27 @@ System.out.println("Angle degrees " + angleDeg);
 
   @Override
   public void periodic() {
-    if(toggleManualHood == true) {
-    }
+    // if(toggleManualHood == true) {
+    // }
 
-    if(toggleManualHood == false) {
+    // if(toggleManualHood == false) {
     
     //mainHoodAngle();
-      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
-        //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
-        hoodPosition = shooterConstants.hoodMinPosition;
-      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-        //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
-        hoodPosition = shooterConstants.hoodMaxPosition;
-      } else {
-        //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
-        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-        //hood.setControl(m_motmag.withPosition(mainHoodAngle));
-      }
-    }
+      // if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+      //   //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
+      //   hoodPosition = shooterConstants.hoodMinPosition;
+      // } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+      //   //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
+      //   hoodPosition = shooterConstants.hoodMaxPosition;
+      // } else {
+      //   //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
+      //   hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+      //   //hood.setControl(m_motmag.withPosition(mainHoodAngle));
+      // }
+    //}
 
     setPoint = hoodEncoderPosition(hoodPosition);
     hood.set(ControlMode.PercentOutput, setPoint);
-    System.out.println("hood power set to pid value: " + setPoint);
     SmartDashboard.putNumber("Main Hood Position With PID", setPoint);
     SmartDashboard.putBoolean("Toggle Manual Hood", toggleManualHood);
 

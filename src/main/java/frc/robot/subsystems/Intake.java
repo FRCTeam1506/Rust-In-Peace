@@ -62,6 +62,7 @@ public class Intake extends SubsystemBase {
 
   public void runIntake(double speed) {
     intake.set(speed);
+    System.out.println("RUNNING INTAKE!");
   } 
   public void intakeLift(double Pos) {
     intakeLift.setControl(m_motmag.withPosition(Pos));
@@ -74,6 +75,7 @@ public class Intake extends SubsystemBase {
   public void hopper (double speed, double kickerSpeed) {
     hopper.set(speed);
     kicker.set(kickerSpeed);
+    System.out.println("HOPPER RUNNING!");
   }
 
   public void stopAllIntake() {

@@ -220,8 +220,8 @@ public class RobotContainer {
         //testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
         //testing.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
 
-        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.3)));
-        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.3)));
+        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.7)));
+        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.7)));
         testing.b().whileFalse(new InstantCommand(() -> shooter.stopHood()));
         testing.y().whileFalse(new InstantCommand(() -> shooter.stopHood()));
 
