@@ -125,6 +125,10 @@ public class RobotContainer {
 
         //Driver controls
 
+        //Climb
+        driver.L1().whileTrue(new InstantCommand(() -> climber.climberUp()));
+        driver.L1().whileFalse(new InstantCommand(() -> climber.climberDown()));
+
         //Intake
         driver.L2().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.L2().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
@@ -159,6 +163,10 @@ public class RobotContainer {
         //driver.a().whileTrue(new InstantCommand(() -> shooter.setShooterRPM(ShootingMath.initialCalcShot)).alongWith(new InstantCommand(hood.setHoodAngleDegrees()))
 
         //Operator
+
+        //Climb
+        operator.leftBumper().whileTrue(new InstantCommand(() -> climber.climberUp()));
+        operator.leftBumper().whileFalse(new InstantCommand(() -> climber.climberDown()));
 
         //Intake
         operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
@@ -211,7 +219,7 @@ public class RobotContainer {
 
         testing.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
 
-        //TODO: TOGGLE TO MANUAL 
+
 
         //MANUAL TURRET
         //testing.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
