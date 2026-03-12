@@ -21,8 +21,8 @@ public class CornerShot extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       // new InstantCommand(() -> shooter.shoot(0.75)), //0.75
-      new InstantCommand(() -> shooter.setShooterRPM(Constants.shooterConstants.cornerShotRPM)),
-      new InstantCommand(() -> shooter.setHood(Constants.shooterConstants.cornerShotHoodAngle)),
+      new InstantCommand(() -> shooter.manualShooter(Constants.presetShots.trenchShotRPM)),
+      new InstantCommand(() -> shooter.setHood(Constants.presetShots.trenchShotHoodAngle)),
       new InstantCommand(() -> intake.hopper(0, 0)),     
       new WaitCommand(0.2),
       new InstantCommand(() -> intake.hopper(0, -0.4)),

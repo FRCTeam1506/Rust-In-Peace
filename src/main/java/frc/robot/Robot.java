@@ -124,7 +124,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_robotContainer.intake.zeroIntake();
+    m_robotContainer.intake.zeroIntakeLift();
     m_robotContainer.shooter.zeroHood();
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
@@ -144,7 +144,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.shooter.automaticHood();
 
     if(DriverStation.getMatchTime() <= 10) { //this means that we are at home
-      m_robotContainer.intake.zeroIntake();
+      m_robotContainer.intake.zeroIntakeLift();
       //m_robotContainer.shooter.zeroHood();
     }
     

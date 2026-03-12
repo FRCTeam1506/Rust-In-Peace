@@ -12,8 +12,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,10 +21,8 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.shoot;
-import frc.robot.commands.shootmath;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -53,7 +49,6 @@ public class RobotContainer {
     public final CommandXboxController testing = new CommandXboxController(2);
     public final CommandPS4Controller driver = new CommandPS4Controller(0);
     public final CommandXboxController operator = new CommandXboxController(1);
-    public final CommandXboxController SysID = new CommandXboxController(3);
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -64,7 +59,6 @@ public class RobotContainer {
     Shooter shooter = new Shooter();
     Climber climber = new Climber();
     Autos autos = new Autos(drivetrain, intake, shooter, turret);
-    ShootingMath shooterAimer = new ShootingMath(new Transform3d());
 
     private final SendableChooser<Command> autoChooser;
     private SendableChooser<Command> autoChooserManual;
@@ -143,7 +137,6 @@ public class RobotContainer {
         //driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
         //driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
         //driver.a().whileTrue(new InstantCommand(() -> shooter.setShooterRPM(ShootingMath.initialCalcShot)).alongWith(new InstantCommand(hood.setHoodAngleDegrees()))
-        testing.a().whileTrue(new shootmath(shooter, intake, drivetrain));
         testing.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
 
         //TODO: TOGGLE TO MANUAL 
@@ -167,9 +160,9 @@ public class RobotContainer {
         operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
         
         operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
-        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntake()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
-        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.shootSpeed(65.0))));
+        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.manualShooter(65.0))));
         operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
         
         operator.b().whileTrue(new InstantCommand(() -> Turret.shootMode = 2).andThen(new shoot(shooter, intake)));
@@ -178,7 +171,7 @@ public class RobotContainer {
         operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
         operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
 
-        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntake()));
+        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
         operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
 
 
@@ -193,18 +186,6 @@ public class RobotContainer {
 
         testing.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
         testing.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
-
-        /*
-        * Joystick Y = quasistatic forward
-        * Joystick A = quasistatic reverse
-        * Joystick B = dynamic forward
-        * Joystick X = dyanmic reverse
-        */
-        SysID.y().whileTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        SysID.a().whileTrue(shooter.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        SysID.b().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        SysID.x().whileTrue(shooter.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
 
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
         testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));

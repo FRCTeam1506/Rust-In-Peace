@@ -19,34 +19,26 @@ public class Climber extends SubsystemBase {
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
 
   public Climber() {
-    var talonFXConfigs = new TalonFXConfiguration();
+    var climberConfigs = new TalonFXConfiguration();
+    climberConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    // talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    //general configurations
+    climberConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+    climberConfigs.CurrentLimits.StatorCurrentLimit = 80;
 
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    config.CurrentLimits.StatorCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimit = 80;
+    //motion magic configurations
+    climberConfigs.MotionMagic.MotionMagicCruiseVelocity = 180; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
+    climberConfigs.MotionMagic.MotionMagicAcceleration = 260; // 160 rps/s acceleration (0.5 seconds) //220
+    climberConfigs.MotionMagic.MotionMagicJerk = 3200; // 1600 rps/s^2 jerk (0.1 seconds)
 
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    //pid configurations
+    climberConfigs.Slot0.kS = 0.24; 
+    climberConfigs.Slot0.kV = 0.12; 
+    climberConfigs.Slot0.kP = 2; //4.8
+    climberConfigs.Slot0.kI = 0;
+    climberConfigs.Slot0 .kD = 0.1;
 
-    var motionMagicConfigs = talonFXConfigs.MotionMagic;
-    motionMagicConfigs.MotionMagicCruiseVelocity = 180; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
-    motionMagicConfigs.MotionMagicAcceleration = 260; // 160 rps/s acceleration (0.5 seconds) //220
-    motionMagicConfigs.MotionMagicJerk = 3200; // 1600 rps/s^2 jerk (0.1 seconds)
-
-    // set slot 0 gains
-    var slot0Configs = talonFXConfigs.Slot0;
-    slot0Configs.kS = 0.24; // add 0.24 V to overcome friction
-    slot0Configs.kV = 0.12; // apply 12 V for a target velocity of 100 rps
-    // PID runs on position
-    slot0Configs.kP = 2; //4.8
-    slot0Configs.kI = 0;
-    slot0Configs.kD = 0.1;
-
-    config.Slot0 = slot0Configs;
-    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-    climber.getConfigurator().apply(motionMagicConfigs);
+    climber.getConfigurator().apply(climberConfigs);
     }
 
   public void runClimber (double power) {

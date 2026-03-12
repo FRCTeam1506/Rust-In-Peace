@@ -4,92 +4,71 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Volt;
-import static edu.wpi.first.units.Units.Volts;
-
 import com.ctre.phoenix.motorcontrol.ControlFrame;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.TalonSRXControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.TalonSRXConfiguration;
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Constants.SwerveConstants;
 import frc.robot.Constants.shooterConstants;
 
 public class Shooter extends SubsystemBase {
+
+  //motor and encoder setup:
+  private TalonFX shooterLeft = new TalonFX(shooterConstants.shooterLeftID);
+  private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRightID);
+  private TalonSRX hood = new TalonSRX(16);
+  private CANcoder hoodEncoder = new CANcoder(55);
+
   //HOOD ENCODER PID CONTROLLER SETUP:
   double xVelocity;
   private final ProfiledPIDController xController =
   new ProfiledPIDController(
       25,
-      SwerveConstants.driveKI,
-      SwerveConstants.driveKD,
-      new TrapezoidProfile.Constraints(5, SwerveConstants.dMaxAccel),
+      0.15,
+      0.175,
+      new TrapezoidProfile.Constraints(5, 2.0),
       0.02);
-  //SHOOTER CONTROLLER SETUP: (WAS USED TO TRY AND MAKE SHOOTER RPM LESS VARIABLE):
-  // private final ProfiledPIDController shooterController =
-  // new ProfiledPIDController(
-  //     200,
-  //     1,
-  //     1,
-  //     new TrapezoidProfile.Constraints(5, SwerveConstants.dMaxAccel),
-  //     0.02);
-  private TalonFX shooterLeft = new TalonFX(shooterConstants.shooterLeft);
-  private TalonFX shooterRight = new TalonFX(shooterConstants.shooterRight);
-  private TalonSRX hood = new TalonSRX(16);
-  private CANcoder hoodEncoder = new CANcoder(55);
-
+  
+  //SHOOTING VARIABLES:
   double shooterPower = 50;
-  double hoodPosition = 0.0;
 
-  public static double shooterRPS;
-  public static double wheelSurfaceSpeed;
-  public static double exitVelocity;
-  public static double hoodAngleDegrees;
-  public static double hoodAngleRadians;
-  public static double vX;
-  public static double calculatedTOF;
+  //HOOD VARIABLES:
+  double hoodPosition = 0.0; //Position that hood is set to
+
   public double setPoint;
   public boolean toggleManualHood;
 
+  
   final VelocityVoltage speedControl = new VelocityVoltage(12);
-  final VelocityTorqueCurrentFOC speedControl2 = new VelocityTorqueCurrentFOC(0).withSlot(1);
-
+  final VelocityTorqueCurrentFOC speedControl2 = new VelocityTorqueCurrentFOC(0).withSlot(1); //TEST THIS
 
   //FOR ALL OF THESE, KEY IS DISTANCE, OUTPUT IS NAME OF THE TABLE
+  //LUTS:
   public InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
 
-
-  double mainShooterRPS, mainHoodAngle;
-  private final VoltageOut m_voltReq = new VoltageOut(0.0);
+  public double mainShooterRPS;
+  public double mainHoodAngle;
 
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Shooter() {
-    // Sets distance conversion: (Wheel Diameter * PI) / PulsesPerRevolution
+    //HOOD CONFIGURATION:
     //m_encoder.setDistancePerPulse(1.0 / 360.0);
     hood.configRemoteFeedbackFilter(55, RemoteSensorSource.CANCoder,0);
     hood.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
@@ -101,59 +80,33 @@ public class Shooter extends SubsystemBase {
     hood.configMotionAcceleration(0.2);
     hood.setControlFramePeriod(ControlFrame.Control_3_General, 100);
 
-    var talonFXConfigs = new TalonFXConfiguration();
-    TalonSRXConfiguration SRXconfig = new TalonSRXConfiguration();
-    TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
 
-    talonFXConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
-    talonFXConfigs.CurrentLimits.StatorCurrentLimit = 80;
+    //SHOOTER CONFIGURATION:
+    var shooterConfigs = new TalonFXConfiguration();
 
+    shooterConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+    shooterConfigs.CurrentLimits.StatorCurrentLimit = 80;
 
-    //talonFXConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-
-    var motionMagicConfigs = talonFXConfigs.MotionMagic;
+    var motionMagicConfigs = shooterConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
     motionMagicConfigs.MotionMagicAcceleration = 260; // 160 rps/s acceleration (0.5 seconds) //220
     motionMagicConfigs.MotionMagicJerk = 3200; // 1600 rps/s^2 jerk (0.1 seconds)
 
     // set slot 0 gains
-    var slot0Configs = talonFXConfigs.Slot0;
-    var slot0SRXconfig = SRXconfig.slot0;
-
-    slot0SRXconfig.kP = 2.5; //2.5
-    slot0SRXconfig.kI = 0;
-    slot0SRXconfig.kD = 0.25;
-
+    var slot0Configs = shooterConfigs.Slot0;
+    
     slot0Configs.kS = 2.5;//0.24 // add 0.24 V to overcome friction //0.24
-    //slot0Configs.kV = 0.004; // apply 12 V for a target velocity of 100 rps //0.12
     slot0Configs.kV = 0;//0.12 // apply 12 V for a target velocity of 100 rps //0.12
-
-    // PID runs on position
     slot0Configs.kP = 5;//100 //2.5
     slot0Configs.kI = 0;
     slot0Configs.kD = 0;//0.25
-
-    SRXconfig.slot0 = slot0SRXconfig;
-
-
-    shooterConfig.Slot1.kS = 2.5;
-    shooterConfig.Slot1.kP = 5;
-    shooterConfig.Slot1.kI = 0;
-    shooterConfig.Slot1.kD = 0;
-    shooterConfig.TorqueCurrent.withPeakForwardTorqueCurrent(Amps.of(40)).withPeakReverseTorqueCurrent(Amps.of(-40));
-
-
-
-    
   
     m_motmag.EnableFOC = true;
 
-    // hood.getConfigurator().apply(motionMagicConfigs);
-    // hood.getConfigurator().apply(slot0hoodConfigs); 
-    hood.configAllSettings(SRXconfig);
-    shooterLeft.getConfigurator().apply(slot0Configs);
-    shooterRight.getConfigurator().apply(slot0Configs);
-    //hood.getConfigurator().apply(config);
+    shooterLeft.getConfigurator().apply(shooterConfigs);
+    shooterRight.getConfigurator().apply(shooterConfigs);
+
+
 
     finalHoodPosition.put(1.42, shooterConstants.hoodMinPosition);
     finalHoodPosition.put(1.91, shooterConstants.hoodMinPosition); //somewhat close to the hub
@@ -176,7 +129,6 @@ public class Shooter extends SubsystemBase {
     finalShooterRPS.put(2.54, 65.0);
     finalShooterRPS.put(3.25, 82.0);
     finalShooterRPS.put(3.67, 91.0);
-
     finalShooterRPS.put(5.2, 95.0); //Full field
     // finalShooterRPS.put(3.25, 82.0);// consider lowering because it is overshooting
     // finalShooterRPS.put(4.11, 95.0);
@@ -190,7 +142,6 @@ public class Shooter extends SubsystemBase {
     timeOfFlight.put(2.54, 1.2);
     timeOfFlight.put(3.25, 1.25);
     timeOfFlight.put(3.98, 1.2);
-
     timeOfFlight.put(5.2, 1.75); //Full field
     // timeOfFlight.put(4.11, 1.2);
 
@@ -199,47 +150,19 @@ public class Shooter extends SubsystemBase {
     //timeOfFlight.put(3.23, 1.55);
   }
 
-  public void shoot(double speed) {
-    //shooterLeft.set(shooterPower/100); //manual adjust
-    //shooterRight.set(shooterPower/100); manual adjust
-    //shooterLeft.set((shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
-    //shooterRight.set(-(shooterController.calculate(shooterLeft.getRotorVelocity().getValueAsDouble(), shooterPower)));
+  public void shoot() {
+    //shooterLeft.set(shooterPower/100); //MANUAL POWER
+    //shooterRight.set(shooterPower/100); //MANUAL POWER
 
-    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //auto power
-    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //auto power
-    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //auto power
-    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //auto power
+    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
+    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
+    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
+    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
   }
 
-  public void cornerShot() {
-
-  }
-
-  public void stopShooter() {
-    shooterLeft.set(0); 
-    shooterRight.set(0);
-  }
-
-  public void manualShooterSPEED(double speed) {
-    shooterLeft.set(-speed);
-    shooterRight.set(speed);
-  }
-
-  public void shootSpeed(double speed) {
-    shooterLeft.setControl(speedControl.withVelocity(speed));
-    shooterRight.setControl(speedControl.withVelocity(speed));
-  }
-  public void zeroHood() {
-    hoodEncoder.setPosition(0);
-  }
-
-  public void setDifferentShooterRPMs(double bottomRPM, double topRPM) {
-    shooterLeft.setControl(speedControl.withVelocity(bottomRPM/60)); //MAKE SURE THAT BOTTOM IS "LEFT" AND TOP IS "RIGHT" 
-    shooterRight.setControl(speedControl.withVelocity(topRPM/60));
-  }
-
-  public void hood (double speed) {
-    hood.set(ControlMode.PercentOutput, speed);
+  public void manualShooter(double speed) {
+     shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
+     shooterRight.setControl(speedControl.withVelocity(shooterPower));
   }
 
   public void setHood(double position) {
@@ -247,6 +170,7 @@ public class Shooter extends SubsystemBase {
     
   }
 
+  //MANUAL SHOOTER:
   public void changeShooterUp() {
     shooterPower += 1;
   }
@@ -254,6 +178,7 @@ public class Shooter extends SubsystemBase {
     shooterPower -= 1;
   }
 
+  //MANUALHOOD:
   public void changeHoodUp() {
     hoodPosition += 0.005;
   }
@@ -263,73 +188,11 @@ public class Shooter extends SubsystemBase {
     hoodPosition -= 0.005;
   }
 
-  public void hoodLow() {
-      //hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
-      System.out.println("RUNNING HOOD LOW!");
-      toggleManualHood = true;
-      hoodPosition = shooterConstants.hoodMinPosition;
-  }
 
   public void automaticHood() {
     toggleManualHood = false;
   }
   
-
-
-public static double hoodDegToMotorRot(double angleDeg) {
-  double a1 = Constants.HoodConstants.ANGLE1_DEG;
-  double p1 = Constants.HoodConstants.MOTOR_ROT1;
-  double a2 = Constants.HoodConstants.ANGLE2_DEG;
-  double p2 = Constants.HoodConstants.MOTOR_ROT2;
-
-  // slope: motorRot per degree
-  double rotPerDeg = (p2 - p1) / (a2 - a1);
-
-  // motorRot = p1 + (angle - a1) * slope
-  return p1 + (angleDeg - a1) * rotPerDeg;
-}
-
-public void setShooterRPM(double shooterRPM) 
-  {
-    shooterLeft.setControl(speedControl.withVelocity(-shooterRPM));
-    shooterRight.setControl(speedControl.withVelocity(shooterRPM));  
-  }
-
-public void setHoodAngleDegrees(double angleDeg) {
-  double targetRot = hoodDegToMotorRot(angleDeg);
-
-  // Clamp to physical limits
-  targetRot = MathUtil.clamp(
-      targetRot,
-      Constants.HoodConstants.MIN_POS_ROT,
-      Constants.HoodConstants.MAX_POS_ROT
-  );
-System.out.println("Angle degrees " + angleDeg);
-  //hood.setControl(m_motmag.withPosition(targetRot));
-}
-
-  public void mainHoodAngle() {
-    // if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMaxPosition) { //
-    //   //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
-    //   hoodPosition = shooterConstants.hoodMinPosition;
-    // } else if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMinPosition) {
-    //   //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
-    //   hoodPosition = shooterConstants.hoodMaxPosition;
-    // } else {
-    //   hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
-    //   hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-    //   //hood.setControl(m_motmag.withPosition(mainHoodAngle));
-      
-    // }
-    //hood.setControl(m_motmag.withPosition(hoodAngleDegrees()));
-  }
-
-  public void setShooterToMathRPMFromMPS(double vSurface) {
-      final double bottomRPM = (vSurface / Constants.ShotConstants.CIRC_BOTTOM_M) * 60.0;
-      final double topRPM = (vSurface / Constants.ShotConstants.CIRC_TOP_M) * 60.0;    
-      setDifferentShooterRPMs(bottomRPM, topRPM);
-  }
-
   public double hoodEncoderPosition(double targetPosition) {
     if(DriverStation.isEnabled()) {
     double targetSpeed = -xController.calculate(hoodEncoder.getPosition().getValueAsDouble(), targetPosition);
@@ -345,134 +208,55 @@ System.out.println("Angle degrees " + angleDeg);
   public void stopHood() {
     hood.set(ControlMode.PercentOutput, 0);
   }
-  
 
-  public void mainShooterPower() {
-    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal)));
-    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal)));
-    //shooterLeft.setControl(speedControl.withVelocity(shooterPower)); //CONSIDER ADDING A CONSTANT TO ALL OF THESE VALUES TO COMPENSATE FOR THE HEAVIER WEIGHT? 
-    //shooterRight.setControl(speedControl.withVelocity(shooterPower));
-    //shooterRight.set(finalShooterRPS.get(Constants.distToGoal));
+  public void stopShooter() {
+    shooterLeft.set(0); 
+    shooterRight.set(0);
   }
 
-  public double hoodAngleDegrees() {
-    return hoodAngleDegrees;
+  public void zeroHood() {
+    hoodEncoder.setPosition(0);
   }
 
-  public double calculateTimeOfFlight(double distanceMeters, double shooterRPS, double hoodAngleDegrees) {
-    if(vX <= 0) {
-      calculatedTOF = 0;
-    }
-    else {
-    calculatedTOF = distanceMeters/vX;
-    }
-    return calculatedTOF;
+  public void hoodLow() {
+      //hood.set(ControlMode.MotionMagic, shooterConstants.hoodMinPosition);
+      System.out.println("RUNNING HOOD LOW!");
+      toggleManualHood = true;
+      hoodPosition = shooterConstants.hoodMinPosition;
   }
-
-  private final SysIdRoutine m_sysIdRoutine =
-   new SysIdRoutine(
-      new SysIdRoutine.Config(
-         null,        // Use default ramp rate (1 V/s)
-         Voltage.ofBaseUnits(4, Volt), // Reduce dynamic step voltage to 4 to prevent brownout
-         null,        // Use default timeout (10 s)
-         // Log state with Phoenix SignalLogger class
-         (state) -> SignalLogger.writeString("state", state.toString())
-      ),
-      new SysIdRoutine.Mechanism(
-         (volts) -> shooterLeft.setControl(m_voltReq.withOutput(volts.in(Volt))),
-         null,
-         this
-      )
-   );
-
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutine.quasistatic(direction);
-    }
-
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return m_sysIdRoutine.dynamic(direction);
-    }
-
   @Override
   public void periodic() {
     if(toggleManualHood == true) {
     }
 
     if(toggleManualHood == false) {
-    
       if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
-        //hood.set(ControlMode.Position, shooterConstants.hoodMinPosition);
         hoodPosition = shooterConstants.hoodMinPosition;
       } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-        //hood.set(ControlMode.Position, shooterConstants.hoodMaxPosition);
         hoodPosition = shooterConstants.hoodMaxPosition;
       } else {
-        //hood.set(ControlMode.Position, finalHoodPosition.get(Constants.distToGoal));
         hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-        //hood.setControl(m_motmag.withPosition(mainHoodAngle));
       }
     }
 
     setPoint = hoodEncoderPosition(hoodPosition);
     hood.set(ControlMode.PercentOutput, setPoint);
-    SmartDashboard.putNumber("Main Hood Position With PID", setPoint);
-    SmartDashboard.putBoolean("Toggle Manual Hood", toggleManualHood);
-
-
 
     //add lower hood if going under trench
-    shooterRPS = shooterLeft.getVelocity().getValueAsDouble();
+    
 
+    //SHOOTER DASHBOARD VALUES:
+    SmartDashboard.putNumber("MANUAL Shooter RPS Set To", shooterPower);
+    SmartDashboard.putNumber("Real Shooter RPS", shooterLeft.getVelocity().getValueAsDouble());
+    SmartDashboard.putNumber("Shooter Power Set to ", finalShooterRPS.get(Constants.distToGoal));
 
-    mainHoodAngle = finalHoodPosition.get(Constants.distToGoal);
-    mainShooterRPS = finalShooterRPS.get(Constants.distToGoal);
+    //HOOD DASHBOARD VALUES:
+    SmartDashboard.putBoolean("Toggle Manual Hood", toggleManualHood);
+    SmartDashboard.putNumber("Hood Power BeingSet To", setPoint);
+    SmartDashboard.putNumber("Hood Position Set to ", hoodPosition);
+    SmartDashboard.putNumber("Hood Position At", hoodEncoder.getPosition().getValueAsDouble());
 
-    SmartDashboard.putNumber("Shooter RPS Set To", shooterPower);
-    SmartDashboard.putNumber("Real Shooter RPS ", shooterLeft.getVelocity().getValueAsDouble());
-    SmartDashboard.putNumber("Hood Position ", hoodEncoder.getPosition().getValueAsDouble());
-      SmartDashboard.putNumber("Hood Motor? Position ", hood.getSelectedSensorPosition());
-
-    SmartDashboard.putNumber("Hood Angle Set to ", mainHoodAngle);
-    SmartDashboard.putNumber("Shooter Power Set to ", mainShooterRPS);
-    SmartDashboard.putNumber("Hood Set to ", hoodPosition);
-
-    // SmartDashboard.putNumber("Shooter RPS ", shooterRight.getvelo);
-
-    wheelSurfaceSpeed = shooterRPS * (Constants.shooterConstants.wheelDiameterMeters * Math.PI);
-    exitVelocity = wheelSurfaceSpeed * Constants.shooterConstants.kSlip;
-    hoodAngleRadians = Math.toRadians(hoodAngleDegrees);
-    vX = exitVelocity * Math.cos(hoodAngleRadians);
 
     Constants.timeOfFlight = timeOfFlight.get(Constants.distToGoal);
-
-
-    
-    //System.out.println("shooter RPS" + shooterPower);
-    //System.out.println("hood position " + hoodPosition);
-    //System.out.println("shooter power" + Constants.shooterConstants.shooterPower);
-    // This method will be called once per scheduler run
-
-    // shooterConstants.shooterPower  = (Constants.distToGoal * 0.0777909) + 0.390793;
-    // shooterConstants.hoodPosition  = (Constants.distToGoal * -0.5302696) - 0.0697538;
-
-    // if(shooterConstants.hoodPosition >= Constants.shooterConstants.hoodMaxPosition) {
-    //   shooterConstants.hoodPosition = Constants.shooterConstants.hoodMaxPosition;
-    // }
-    
-    // if(shooterConstants.hoodPosition <= Constants.shooterConstants.hoodMinPosition) {
-    //   shooterConstants.hoodPosition = Constants.shooterConstants.hoodMinPosition;
-    // }
-
-    //System.out.println("dist to goal" + Constants.distToGoal);
-    
-    // setHood(shooterConstants.hoodPosition);
-    // shoot(shooterConstants.shooterPower);
-
-
-
-
-    //mainShooterPower();
-  }
-
-  
+  } 
 }

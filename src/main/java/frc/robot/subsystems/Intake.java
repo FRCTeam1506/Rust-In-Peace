@@ -10,7 +10,6 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
 import frc.robot.Constants.intakeConstants;
 
 public class Intake extends SubsystemBase {
@@ -53,17 +52,20 @@ public class Intake extends SubsystemBase {
 
 
     intakeLift.getConfigurator().apply(motionMagicConfigs);
-    intake.getConfigurator().apply(slot0Configs); 
     intakeLift.getConfigurator().apply(slot0Configs); 
 
-  
-
+    intake.getConfigurator().apply(slot0Configs); 
   }
 
   public void runIntake(double speed) {
     intake.set(speed);
-    System.out.println("RUNNING INTAKE!");
   } 
+
+  public void hopper(double speed, double kickerSpeed) {
+    hopper.set(speed);
+    kicker.set(kickerSpeed);
+  }
+
   public void intakeLift(double Pos) {
     intakeLift.setControl(m_motmag.withPosition(Pos));
   }
@@ -71,11 +73,13 @@ public class Intake extends SubsystemBase {
   public void runIntakeLift(double speed) {
     intakeLift.set(speed);
   }
-
-  public void hopper (double speed, double kickerSpeed) {
-    hopper.set(speed);
-    kicker.set(kickerSpeed);
-    System.out.println("HOPPER RUNNING!");
+  
+  public void zeroIntakeLift() {
+    intakeLift.setPosition(0);
+  }
+  
+  public void intakeLiftStop() {
+    intakeLift.set(0);
   }
 
   public void stopAllIntake() {
@@ -84,20 +88,8 @@ public class Intake extends SubsystemBase {
     intake.set(0);
   }
 
-  public void intakeLiftStop() {
-    intakeLift.set(0);
-  }
-  
-
-  public void zeroIntake() {
-    intakeLift.setPosition(0);
-
-  }
-
-
   @Override
   public void periodic() {
-    // System.out.println("lift position " + intakeLift.getPosition());
     // This method will be called once per scheduler run
   }
 }
