@@ -160,6 +160,11 @@ public class Turret extends SubsystemBase {
     //System.out.println("set Turret angle to" + angle);
   }
 
+  public void manualTurret (double speed) {
+    if (shootMode == 0) {
+      turret.set(speed);
+    }
+  }
 
 
   @Override
@@ -196,8 +201,12 @@ public class Turret extends SubsystemBase {
     //Set min and max
     finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 85);
 
-    //Set turret to angle
-    setTurretToAngle(finalTurretAngle);
+    //Set turret to angle if auto aim is being used
+    if (shootMode > 0) {
+      setTurretToAngle(finalTurretAngle);
+    } else {
+      
+    }
 
     //Get dist to goal
     targetVec = goalLocation.minus(vRobotPose);

@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.shooterConstants;
 import frc.robot.commands.shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -87,6 +88,7 @@ public class RobotContainer {
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
+        //For testing
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
@@ -95,6 +97,16 @@ public class RobotContainer {
                     .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+
+        //For driver
+        // drivetrain.setDefaultCommand(
+        //     // Drivetrain will execute this command periodically
+        //     drivetrain.applyRequest(() ->
+        //         drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+        //             .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+        //             .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+        //     )
+        // );
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -111,11 +123,19 @@ public class RobotContainer {
         // add import
         //operator.x().
 
+        //Driver controls
+
+        //Intake
         driver.L2().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.L2().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
         
+        //Shoot
         driver.R2().whileTrue(new shoot(shooter, intake));
         driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+
+        //Shoot mode
+        driver.L3().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
+        driver.R3().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
         
         //TO IMPLEMENT:
 
@@ -137,6 +157,58 @@ public class RobotContainer {
         //driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
         //driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
         //driver.a().whileTrue(new InstantCommand(() -> shooter.setShooterRPM(ShootingMath.initialCalcShot)).alongWith(new InstantCommand(hood.setHoodAngleDegrees()))
+
+        //Operator
+
+        //Intake
+        operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
+        operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+
+        //Shooter
+        operator.rightTrigger().whileTrue(new shoot(shooter, intake));
+        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        
+        //Manual intake
+        operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
+        operator.povUp().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
+        //operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+
+        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(shooterConstants.hoodMinPosition)).alongWith(new InstantCommand(() -> shooter.manualShooter(50.0))));//shooter.setHood(-0.64), shooter.manualshooter(65)
+        operator.x().whileFalse(new InstantCommand(() -> new InstantCommand(() -> shooter.stopShooter())));
+        // operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
+
+        //TEST THIS!
+        operator.b().onTrue(new InstantCommand(() -> shooter.automaticHood()));
+        operator.y().onTrue(new InstantCommand(() -> shooter.manualHood()));
+        
+        // operator.b().whileTrue(new InstantCommand(() -> Turret.shootMode = 2).andThen(new shoot(shooter, intake)));
+        // operator.b().whileFalse(new InstantCommand(() -> Turret.shootMode = 1).alongWith(new InstantCommand(() -> shooter.stopShooter())));
+
+        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
+        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
+
+        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
+        //operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
+
+        //Manual Turret
+        operator.leftBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
+        operator.rightBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
+        operator.leftBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        operator.rightBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+
+
+        //operator.rightBumper().whileTrue(new InstantCommand (() -> MAIL OUPOST)) TODO: FILL IN MAIL OUTPOST COMMAND
+        //operator.rightBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
+
+        //operator.leftBumper().whileTrue(new InstantCommand (() -> MAIL DEPOT)) TODO: FILL IN MAIL DEPOT COMMAND
+        //operator.leftBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
+
+        
+        //SHOOT COMMAND
+
+
+        //Testing
+
         testing.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
 
         //TODO: TOGGLE TO MANUAL 
@@ -156,42 +228,12 @@ public class RobotContainer {
         testing.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         testing.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
-        operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
-        operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
-        
-        operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
-        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
-
-        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(-0.64)).alongWith(new InstantCommand(() -> shooter.manualShooter(65.0))));
-        operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
-        
-        operator.b().whileTrue(new InstantCommand(() -> Turret.shootMode = 2).andThen(new shoot(shooter, intake)));
-        operator.b().whileFalse(new InstantCommand(() -> Turret.shootMode = 4).alongWith(new InstantCommand(() -> shooter.stopShooter())));
-
-        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
-        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
-
-        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
-        operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
-
-
-        //operator.rightBumper().whileTrue(new InstantCommand (() -> MAIL OUPOST)) TODO: FILL IN MAIL OUTPOST COMMAND
-        //operator.rightBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
-
-        //operator.leftBumper().whileTrue(new InstantCommand (() -> MAIL DEPOT)) TODO: FILL IN MAIL DEPOT COMMAND
-        //operator.leftBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
-
-        
-        //SHOOT COMMAND
-
         testing.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
         testing.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
 
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
         testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
     
-        operator.rightTrigger().whileTrue(new shoot(shooter, intake));
-        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
 
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
         testing.rightStick().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));

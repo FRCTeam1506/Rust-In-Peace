@@ -167,7 +167,6 @@ public class Shooter extends SubsystemBase {
 
   public void setHood(double position) {
     hood.set(TalonSRXControlMode.MotionMagic, position); //was position, then Constants.shooterConstants.hoodPosition
-    
   }
 
   //MANUAL SHOOTER:
@@ -191,6 +190,10 @@ public class Shooter extends SubsystemBase {
 
   public void automaticHood() {
     toggleManualHood = false;
+  }
+
+  public void manualHood() {
+    toggleManualHood = true;
   }
   
   public double hoodEncoderPosition(double targetPosition) {
