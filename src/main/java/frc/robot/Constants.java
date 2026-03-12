@@ -28,7 +28,7 @@ public class Constants {
         public static final int shooterRightID = 61;
         public static final int hoodID = 16;
 
-        public static final double hoodMaxPosition = 0.105;// Maybe 0.105 //set 0.0 //0.1
+        public static final double hoodMaxPosition = -0.085;// Maybe 0.105 //set 0.0 //0.1
         public static final double hoodMinPosition = hoodMaxPosition - 0.135; //-0.035
         
         public static double shooterPower;  
@@ -39,7 +39,8 @@ public class Constants {
     
     public class presetShots {
         public static final double trenchShotRPM = 100.0;
-        public static final double trenchShotHoodAngle = 0.0;
+        public static final double trenchShotHoodAngle = 0.0
+        ;
         //public static final double trenchShotTurretAngle = 0; //consider doing position to make it easier, just for the corner shot
 
         public static final double cornerShotRPM = 0; //SET THIS

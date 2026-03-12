@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.time.Instant;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -89,24 +91,24 @@ public class RobotContainer {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
         //For testing
-        drivetrain.setDefaultCommand(
-            // Drivetrain will execute this command periodically
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(-testing.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-testing.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
-            )
-        );
-
-        //For driver
         // drivetrain.setDefaultCommand(
         //     // Drivetrain will execute this command periodically
         //     drivetrain.applyRequest(() ->
-        //         drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-        //             .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-        //             .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+        //         drive.withVelocityX(-testing.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+        //             .withVelocityY(-testing.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+        //             .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
         //     )
         // );
+
+        //For driver
+        drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
+            drivetrain.applyRequest(() ->
+                drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-driver.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            )
+        );
 
         // Idle while the robot is disabled. This ensures the configured
         // neutral mode is applied to the drive motors while disabled.
@@ -120,14 +122,11 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-testing.getLeftY(), -testing.getLeftX()))
         ));
 
-        // add import
-        //operator.x().
-
         //Driver controls
 
         //Climb
-        driver.L1().whileTrue(new InstantCommand(() -> climber.climberUp()));
-        driver.L1().whileFalse(new InstantCommand(() -> climber.climberDown()));
+        //driver.L1().whileTrue(new InstantCommand(() -> climber.climberUp()));
+        //driver.L1().whileFalse(new InstantCommand(() -> climber.climberDown()));
 
         //Intake
         driver.L2().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
@@ -135,7 +134,7 @@ public class RobotContainer {
         
         //Shoot
         driver.R2().whileTrue(new shoot(shooter, intake));
-        driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
 
         //Shoot mode
         driver.L3().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
@@ -165,8 +164,8 @@ public class RobotContainer {
         //Operator
 
         //Climb
-        operator.leftBumper().whileTrue(new InstantCommand(() -> climber.climberUp()));
-        operator.leftBumper().whileFalse(new InstantCommand(() -> climber.climberDown()));
+        // operator.leftBumper().whileTrue(new InstantCommand(() -> climber.climberUp()));
+        // operator.leftBumper().whileFalse(new InstantCommand(() -> climber.climberDown()));
 
         //Intake
         operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
@@ -174,15 +173,15 @@ public class RobotContainer {
 
         //Shooter
         operator.rightTrigger().whileTrue(new shoot(shooter, intake));
-        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
         
         //Manual intake
         operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
         operator.povUp().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
         //operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
-        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(shooterConstants.hoodMinPosition)).alongWith(new InstantCommand(() -> shooter.manualShooter(50.0))));//shooter.setHood(-0.64), shooter.manualshooter(65)
-        operator.x().whileFalse(new InstantCommand(() -> new InstantCommand(() -> shooter.stopShooter())));
+        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(shooterConstants.hoodMinPosition)).alongWith(new InstantCommand(() -> shooter.manualShooter(50.0)).alongWith(new InstantCommand(() -> intake.hopper(0.5, -0.5)))));//shooter.setHood(-0.64), shooter.manualshooter(65)
+        operator.x().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
         // operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
 
         //TEST THIS!
@@ -240,7 +239,7 @@ public class RobotContainer {
         testing.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
 
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
-        testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
     
 
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
@@ -274,13 +273,6 @@ public class RobotContainer {
         // driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
 
         testing.rightBumper().onTrue(new InstantCommand(() -> shooter.zeroHood()));
-
-        // Run SysId routines when holding back/start and X/Y.
-        // Note that each routine should be run exactly once in a single log.
-        testing.back().and(testing.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        testing.back().and(testing.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        testing.start().and(testing.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        testing.start().and(testing.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
         testing.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));

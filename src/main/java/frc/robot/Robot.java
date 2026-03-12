@@ -74,7 +74,7 @@ public class Robot extends TimedRobot {
       //System.out.println(driveState.Pose.getRotation().getDegrees());
       
       var llMeasurement_left = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_LEFT);
-      //var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
+      // var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_BACK);
       var llMeasurement_right = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.LL_RIGHT);
 
       var llMeasurement_back = LimelightHelpers.getBotPoseEstimate_wpiBlue(VisionConstants.LL_BACK);
@@ -83,7 +83,7 @@ public class Robot extends TimedRobot {
       //For some reason left and right cameras the MT2 is fixed but not on the back
 
 
-      if (llMeasurement_left != null && llMeasurement_left.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_LEFT) > 0.33) {
+      if (llMeasurement_left != null && llMeasurement_left.tagCount > 0 && Math.abs(omegaRps) < 2.0){// && LimelightHelpers.getTA(VisionConstants.LL_LEFT) > 0.33) {
 
         // Pose2d pose = new Pose2d(llMeasurement.pose.getX(), llMeasurement.pose.getY(), llMeasurement.pose.getRotation().minus(new Rotation2d(0))); //minus rotation2d(math.pi)
 
@@ -95,14 +95,14 @@ public class Robot extends TimedRobot {
         // SmartDashboard.putNumberArray("MT2Result_Center", new double[]{llMeasurement.pose.getX(), llMeasurement.pose.getY()});
       }
 
-      if (llMeasurement_right != null && llMeasurement_right.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_RIGHT) > 0.33) {
+      if (llMeasurement_right != null && llMeasurement_right.tagCount > 0 && Math.abs(omegaRps) < 2.0){// && LimelightHelpers.getTA(VisionConstants.LL_RIGHT) > 0.33) {
         m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_right.pose, llMeasurement_right.timestampSeconds);
         //System.out.println("right " + llMeasurement_right.pose);
         //System.out.println("heading " + headingDeg);
 
       }
 
-      if (llMeasurement_back != null && llMeasurement_back.tagCount > 0 && Math.abs(omegaRps) < 2.0 && LimelightHelpers.getTA(VisionConstants.LL_BACK) > 0.33) {
+      if (llMeasurement_back != null && llMeasurement_back.tagCount > 0 && Math.abs(omegaRps) < 2.0){// && LimelightHelpers.getTA(VisionConstants.LL_BACK) > 0.33) {
         m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_back.pose, llMeasurement_back.timestampSeconds);
         //System.out.println("right " + llMeasurement_right.pose);
         //System.out.println("heading " + headingDeg);

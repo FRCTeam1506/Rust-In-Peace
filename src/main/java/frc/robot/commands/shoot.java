@@ -21,6 +21,7 @@ public class shoot extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       // new InstantCommand(() -> shooter.shoot(0.75)), //0.75
+      //new InstantCommand(() -> shooter.LUTHood()),
       new InstantCommand(() -> intake.runIntake(-0.2)),
       new InstantCommand(() -> shooter.shoot()),
       //new InstantCommand(() -> shooter.manualShooterSPEED(1)),

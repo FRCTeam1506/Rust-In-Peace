@@ -142,7 +142,7 @@ public class Turret extends SubsystemBase {
 
   //Main Methods
   public void zeroTurret() {
-    turret.setPosition(-0.525); //-0.6171807
+    turret.setPosition(-0.535); //-0.6171807
     System.out.println("Zero");
   }
 
@@ -174,6 +174,11 @@ public class Turret extends SubsystemBase {
     robotPose = drivetrain.getState().Pose;
     robotPoseX = drivetrain.getState().Pose.getX();
     robotPoseY = drivetrain.getState().Pose.getY();
+
+    // if(robotPoseX > 4.1 && robotPoseX < 5.2) {
+    //   Constants.shooterConhoodPosition = 
+    // }
+    
 
     //Use this instead of drivetrain pose to account for tuuret offset and rotation of the robot. 
     turretPose = drivetrain.getState().Pose.transformBy(turretOffset); 

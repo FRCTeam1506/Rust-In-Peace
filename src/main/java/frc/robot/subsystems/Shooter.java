@@ -16,11 +16,14 @@ import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.shooterConstants;
@@ -68,6 +71,7 @@ public class Shooter extends SubsystemBase {
   final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Shooter() {
+    //initDefaultCommand();
     //HOOD CONFIGURATION:
     //m_encoder.setDistancePerPulse(1.0 / 360.0);
     hood.configRemoteFeedbackFilter(55, RemoteSensorSource.CANCoder,0);
@@ -154,10 +158,17 @@ public class Shooter extends SubsystemBase {
     //shooterLeft.set(shooterPower/100); //MANUAL POWER
     //shooterRight.set(shooterPower/100); //MANUAL POWER
 
-    // shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
-    // shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
-    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
-    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
+    shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
+    shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
+    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+        hoodPosition = shooterConstants.hoodMinPosition;
+      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+        hoodPosition = shooterConstants.hoodMaxPosition;
+      } else {
+        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+      }
+    //shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
+    //shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
   }
 
   public void manualShooter(double speed) {
@@ -227,11 +238,25 @@ public class Shooter extends SubsystemBase {
       toggleManualHood = true;
       hoodPosition = shooterConstants.hoodMinPosition;
   }
+
+  //GET THIS TO WORK!
+  // public void initDefaultCommand() {
+  //       setPoint = hoodEncoderPosition(Constants.shooterConstants.hoodMinPosition);
+  //       setDefaultCommand(new InstantCommand(() -> hood.set(ControlMode.PercentOutput, setPoint)));
+  // }
+
+  public void lowerHood() {
+    hoodPosition = shooterConstants.hoodMinPosition;
+  }
+  public void LUTHood() {
+    hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+  }
   @Override
   public void periodic() {
+        
+
     if(toggleManualHood == true) {
     }
-
     if(toggleManualHood == false) {
       if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
         hoodPosition = shooterConstants.hoodMinPosition;
@@ -242,8 +267,9 @@ public class Shooter extends SubsystemBase {
       }
     }
 
+    Constants.shooterConstants.hoodPosition = hoodPosition;
     setPoint = hoodEncoderPosition(hoodPosition);
-    hood.set(ControlMode.PercentOutput, setPoint);
+    //hood.set(ControlMode.PercentOutput, setPoint);
 
     //add lower hood if going under trench
     
