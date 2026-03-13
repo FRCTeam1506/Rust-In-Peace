@@ -133,6 +133,11 @@ public class RobotContainer {
         ));
 
         //DRIVER CONTROLS:
+
+        //Shoot mode
+        driver.L3().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
+        driver.R3().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
+
         driver.L2().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.L2().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
         
@@ -247,6 +252,12 @@ public class RobotContainer {
 
         //operator.leftBumper().whileTrue(new InstantCommand (() -> MAIL DEPOT)) TODO: FILL IN MAIL DEPOT COMMAND
         //operator.leftBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
+
+        //Manual Turret
+        // operator.leftBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
+        // operator.rightBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
+        // operator.leftBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        // operator.rightBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
 
         //TESTING CONTROLS:
         //MANUAL TURRET

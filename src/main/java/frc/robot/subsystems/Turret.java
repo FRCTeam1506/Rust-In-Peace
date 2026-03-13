@@ -157,6 +157,12 @@ public class Turret extends SubsystemBase {
     turret.setControl(m_motmag.withPosition(angleToPos));
   }
 
+  public void manualTurret (double speed) {
+    if (shootMode == 0) {
+      turret.set(speed);
+    }
+  }
+
 
 
   @Override
