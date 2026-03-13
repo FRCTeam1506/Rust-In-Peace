@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.shooterConstants;
+import frc.robot.commands.PresetShots;
 import frc.robot.commands.shoot;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Climber;
@@ -62,6 +62,8 @@ public class RobotContainer {
     Shooter shooter = new Shooter();
     Climber climber = new Climber();
     Autos autos = new Autos(drivetrain, intake, shooter, turret);
+    private boolean m_isAutoMode = false; 
+
 
     private final SendableChooser<Command> autoChooser;
     private SendableChooser<Command> autoChooserManual;
@@ -84,6 +86,8 @@ public class RobotContainer {
 
         SmartDashboard.putData("Auto Mode 2000", autoChooserManual);
 
+        //shooter.setDefaultCommand(Commands.run(() -> shooter.stopShooter(), shooter));
+
         configureBindings();
     }
 
@@ -103,6 +107,13 @@ public class RobotContainer {
         //For driver
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
+            //TESTING CONTROLLER
+            // drivetrain.applyRequest(() ->
+            //     drive.withVelocityX(-testing.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+            //         .withVelocityY(-testing.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+            //         .withRotationalRate(-testing.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
+            // )
+            //DRIVER CONTROLLER
             drivetrain.applyRequest(() ->
                 drive.withVelocityX(-driver.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-driver.getLeftX() * MaxSpeed) // Drive left with negative X (left)
@@ -117,31 +128,65 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        //testing.y().whileTrue(drivetrain.applyRequest(() -> brake));
         testing.x().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-testing.getLeftY(), -testing.getLeftX()))
         ));
 
-        //Driver controls
-
-        //Climb
-        //driver.L1().whileTrue(new InstantCommand(() -> climber.climberUp()));
-        //driver.L1().whileFalse(new InstantCommand(() -> climber.climberDown()));
-
-        //Intake
+        //DRIVER CONTROLS:
         driver.L2().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         driver.L2().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
         
+        //TO TEST: for default hood low
+        // driver.share().onTrue(Commands.runOnce(() -> {
+        //     m_isAutoMode = !m_isAutoMode;
+        //     SmartDashboard.putBoolean("Shooting Auto Mode", m_isAutoMode);
+        // }));
+
+        // driver.R2().whileTrue(
+        //     Commands.either(
+        //         new shoot(shooter, intake), 
+        //         Commands.run(() -> {        
+        //             shooter.incrementalShooter();
+        //             intake.runIntake(-0.8);
+        //         }, shooter, intake),
+        //         () -> m_isAutoMode 
+        //     )
+        // );
+
+        // driver.R2().onFalse(new InstantCommand(() -> {
+        //     shooter.stopShooter();
+        //     intake.stopAllIntake();
+        // }));
+
+
         //Shoot
         driver.R2().whileTrue(new shoot(shooter, intake));
-        driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
-
-        //Shoot mode
-        driver.L3().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
-        driver.R3().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
+        driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
         
-        //TO IMPLEMENT:
+        driver.square().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+        //Outtake - runs intake in reverse and lowers intake lift to outtake balls
+        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
+        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
+
+        //PRESET SHOTS:
+        //Trench shot preset
+        driver.square().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.trenchShotRPS, Constants.presetShots.trenchShotHoodAngle));
+        driver.square().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        
+        //Corner shot preset
+        driver.triangle().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.backCornerShotRPS, Constants.presetShots.backCornerShotHoodAngle));
+        driver.triangle().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+
+        //Close shot preset
+        driver.cross().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.closeShotRPS, Constants.presetShots.closeShotHoodAngle));
+        driver.cross().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+
+        //Rev intake to help feed balls
+        driver.R1().whileTrue(new InstantCommand(() -> intake.runIntake(0.8)));
+        driver.R1().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
+
+        //TO IMPLEMENT:
         //driver.R1().whileTrue(new InstantCommand(() -> MAIL OUTPOST))
         //driver.R1().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
 
@@ -153,73 +198,57 @@ public class RobotContainer {
         // driver.povDown().whileFalse(new InstantCommand(() -> climber.stop()));
         // driver.povDown().whileTrue(new InstantCommand(() -> climber.climberDown()));
         // driver.povUp().whileFalse(new InstantCommand(() -> climber.stop()));
-        driver.square().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+        //RUN SHOOTER POWER
+        // driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));
+        // driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
 
-        // in configureBindings():
-        //driver.a().whileTrue(new ShootOnTheMove(drivetrain, shooter, turret, intake));
-        //driver.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()));
-        //driver.a().whileTrue(new InstantCommand(() -> shooter.setShooterRPM(ShootingMath.initialCalcShot)).alongWith(new InstantCommand(hood.setHoodAngleDegrees()))
+        //TODO: TOGGLE TO MANUAL 
 
-        //Operator
+        //OPERATOR CONTROLS:
+        //Run intake lift up, then zero when dpad up is released.
+        operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntakeLift(-0.5)));
+        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        
+        //PRESET SHOTS:
+        //Trench shot preset
+        operator.x().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.trenchShotRPS, Constants.presetShots.trenchShotHoodAngle));
+        operator.x().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
+        
+        //Corner shot preset
+        operator.y().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.backCornerShotRPS, Constants.presetShots.backCornerShotHoodAngle));
+        operator.y().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
 
-        //Climb
-        // operator.leftBumper().whileTrue(new InstantCommand(() -> climber.climberUp()));
-        // operator.leftBumper().whileFalse(new InstantCommand(() -> climber.climberDown()));
+        //Close shot preset
+        operator.a().whileTrue(new PresetShots(shooter, intake, Constants.presetShots.closeShotRPS, Constants.presetShots.closeShotHoodAngle));
+        operator.a().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
 
-        //Intake
+        //Outtake - runs intake in reverse and lowers intake lift to outtake balls
+        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
+        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
+
+        //Zeros:
+        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
+        operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
+
+        //Macrointake
         operator.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         operator.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
         //Shooter
         operator.rightTrigger().whileTrue(new shoot(shooter, intake));
-        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
-        
-        //Manual intake
-        operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntake(-0.5)));
-        operator.povUp().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
-        //operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
 
-        operator.x().whileTrue(new InstantCommand(() -> shooter.setHood(shooterConstants.hoodMinPosition)).alongWith(new InstantCommand(() -> shooter.manualShooter(50.0)).alongWith(new InstantCommand(() -> intake.hopper(0.5, -0.5)))));//shooter.setHood(-0.64), shooter.manualshooter(65)
-        operator.x().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
-        // operator.x().whileFalse(new InstantCommand(() -> shooter.setHood(0)).alongWith(new InstantCommand(() -> shooter.stopShooter())));
-
-        //TEST THIS!
-        operator.b().onTrue(new InstantCommand(() -> shooter.automaticHood()));
-        operator.y().onTrue(new InstantCommand(() -> shooter.manualHood()));
-        
-        // operator.b().whileTrue(new InstantCommand(() -> Turret.shootMode = 2).andThen(new shoot(shooter, intake)));
-        // operator.b().whileFalse(new InstantCommand(() -> Turret.shootMode = 1).alongWith(new InstantCommand(() -> shooter.stopShooter())));
-
-        operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
-        operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
-
-        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
-        //operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
-
-        //Manual Turret
-        operator.leftBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
-        operator.rightBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
-        operator.leftBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
-        operator.rightBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
-
-
+        //Rev intake to help feed balls
+        operator.rightBumper().whileTrue(new InstantCommand(() -> intake.runIntake(0.8)));
+        operator.rightBumper().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
         //operator.rightBumper().whileTrue(new InstantCommand (() -> MAIL OUPOST)) TODO: FILL IN MAIL OUTPOST COMMAND
         //operator.rightBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
 
         //operator.leftBumper().whileTrue(new InstantCommand (() -> MAIL DEPOT)) TODO: FILL IN MAIL DEPOT COMMAND
         //operator.leftBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
 
-        
-        //SHOOT COMMAND
-
-
-        //Testing
-
-        testing.a().whileFalse(new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
-
-
-
+        //TESTING CONTROLS:
         //MANUAL TURRET
         //testing.x().whileTrue(new InstantCommand(() -> turret.manualTurret(0.1)));
         testing.x().whileFalse(new InstantCommand(() -> turret.stopTurret()));
@@ -230,49 +259,36 @@ public class RobotContainer {
             shooter.automaticHood();
         }));
         
-
         //RUN MACROINTAKE
         testing.leftTrigger().whileTrue(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
         testing.leftTrigger().whileFalse(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0))));
 
+        //SHOOT COMMAND
         testing.leftBumper().onTrue(Commands.runOnce(SignalLogger::start));
         testing.rightBumper().onTrue(Commands.runOnce(SignalLogger::stop));
 
         testing.rightTrigger().whileTrue(new shoot(shooter, intake));
-        testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())).alongWith(new InstantCommand(() -> shooter.lowerHood())));
+        testing.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
     
-
         //TURRET SHOT MODE CHANGE  //1 = keep heading at 0. 2 = Main shoot to goal. 3 = mail left. 4 = mail right.
         testing.rightStick().onTrue(new InstantCommand(() -> turret.shootModeChange(true)));
         testing.leftStick().onTrue(new InstantCommand(() -> turret.shootModeChange(false)));
 
-        //MANUAL SHOOTER HOOD
-        //testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeHoodDown()));
-        //testing.povRight().onTrue(new InstantCommand(() -> shooter.changeHoodUp()));
-
-        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.7)));
-        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.7)));
+        testing.y().whileTrue(new InstantCommand(() -> shooter.runHood(0.7))); //Run hood up by setting speed
+        testing.b().whileTrue(new InstantCommand(() -> shooter.runHood(-0.7))); //Run hood down by setting speed
         testing.b().whileFalse(new InstantCommand(() -> shooter.stopHood()));
         testing.y().whileFalse(new InstantCommand(() -> shooter.stopHood()));
 
 
-        //MANUAL SHOOTER POWER
-        testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeShooterUp()));
-        testing.povRight().onTrue(new InstantCommand(() -> shooter.changeShooterDown()));
-        //testing.povUp().whileTrue(new InstantCommand(() -> shooter.setHood(0.1)));
-        //testing.povUp().whileFalse(new InstantCommand(() -> shooter.stopHood()));
-        testing.povUp().whileTrue(new InstantCommand(() -> shooter.changeHoodUp()));
-        testing.povDown().whileFalse(new InstantCommand(() -> shooter.stopHood()));
-        testing.povDown().whileTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+        //MANUAL SHOOTER SPEED AND HOOD ANGLE ADJUSTMENT
+        testing.povLeft().onTrue(new InstantCommand(() -> shooter.changeShooterUp())); //Increase manual shooter speed
+        testing.povRight().onTrue(new InstantCommand(() -> shooter.changeShooterDown())); //Decrease manual shooter speed
+        testing.povUp().whileTrue(new InstantCommand(() -> shooter.changeHoodUp())); //Increase hoodPosition - Increase manual hood angle
+        testing.povDown().whileTrue(new InstantCommand(() -> shooter.changeHoodDown())); //Decrease hoodPosition - Decrease manual hood angle
+        testing.povDown().whileFalse(new InstantCommand(() -> shooter.stopHood())); 
         testing.povUp().whileFalse(new InstantCommand(() -> shooter.stopHood()));
 
-
-
-        //RUN SHOOTER POWER
-        // driver.rightBumper().whileTrue(new InstantCommand ( () -> shooter.manualShooterSPEED()));
-        // driver.rightBumper().whileFalse(new InstantCommand ( () -> shooter.stopShooter()));
-
-        testing.rightBumper().onTrue(new InstantCommand(() -> shooter.zeroHood()));
+        testing.rightBumper().onTrue(new InstantCommand(() -> shooter.zeroHood())); //Zero hood encoder - untested on new hood
 
         // Reset the field-centric heading on left bumper press.
         testing.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
@@ -280,24 +296,6 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
-    // public Command getAutonomousCommand() {
-    //     // Simple drive forward auton
-    //     final var idle = new SwerveRequest.Idle();
-    //     return Commands.sequence(
-    //         // Reset our field centric heading to match the robot
-    //         // facing away from our alliance station wall (0 deg).
-    //         drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-    //         // Then slowly drive forward (away from us) for 5 seconds.
-    //         drivetrain.applyRequest(() ->
-    //             drive.withVelocityX(0.5)
-    //                 .withVelocityY(0)
-    //                 .withRotationalRate(0)
-    //         )
-    //         .withTimeout(5.0),
-    //         // Finally idle for the rest of auton
-    //         drivetrain.applyRequest(() -> idle)
-    //     );
-    // }
     public Command getAutonomousCommand() { 
         /* Run the path selected from the auto chooser */
         return autoChooser.getSelected();

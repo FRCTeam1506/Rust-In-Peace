@@ -44,7 +44,6 @@ public class Turret extends SubsystemBase {
     Translation2d goalLocation = new Translation2d(0, 0);
 
     //FIELD LOCATIONS:
-
     final double redLine = 11.5; //used to be 12.6, made it 11.5 for more accurate zone of when we want to do mailing funciton
     final double middleY = 4;
     final double blueLine = 4.1;
@@ -68,7 +67,6 @@ public class Turret extends SubsystemBase {
     double angleToGoal;
     double toDegree;
     double turretAngleTarget;
-    double finalTurretPos;
     double angleToPos;
     double turretAngle;
     double dist;
@@ -142,7 +140,7 @@ public class Turret extends SubsystemBase {
 
   //Main Methods
   public void zeroTurret() {
-    turret.setPosition(-0.535); //-0.6171807
+    turret.setPosition(-0.525); //-0.6171807, was playing with this
     System.out.println("Zero");
   }
 
@@ -157,14 +155,8 @@ public class Turret extends SubsystemBase {
   public void setTurretToAngle (double angle) {
     angleToPos = ((angle /360) * 13.2);
     turret.setControl(m_motmag.withPosition(angleToPos));
-    //System.out.println("set Turret angle to" + angle);
   }
 
-  public void manualTurret (double speed) {
-    if (shootMode == 0) {
-      turret.set(speed);
-    }
-  }
 
 
   @Override
@@ -309,7 +301,7 @@ public class Turret extends SubsystemBase {
     //Print out info
     SmartDashboard.putNumber("Turret Position ", turret.getPosition().getValueAsDouble());
     SmartDashboard.putNumber("Turret Target Angle", turretAngle);
-    SmartDashboard.putNumber("Final Turret Target Angle", finalTurretAngle);
+    SmartDashboard.putNumber("Constrained Turret Target Angle", finalTurretAngle);
     SmartDashboard.putBoolean("Zero Turret", zeroTurret.get());
     SmartDashboard.putNumber("Shoot Mode ", shootMode);
     SmartDashboard.putNumber("Dist to goal", dist);

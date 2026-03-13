@@ -1,20 +1,10 @@
 package frc.robot;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.pathplanner.lib.path.PathConstraints;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 
 public class Constants {
 
     public static double timeOfFlight;
-
-    // public InterpolatingDoubleTreeMap finalHoodPosition = new InterpolatingDoubleTreeMap();
-    // public InterpolatingDoubleTreeMap finalShooterRPS = new InterpolatingDoubleTreeMap();
-    // public InterpolatingDoubleTreeMap timeOfFlight = new InterpolatingDoubleTreeMap();
-
     public static double distToGoal;
 
     public class turretConstants {
@@ -33,22 +23,22 @@ public class Constants {
         
         public static double shooterPower;  
         public static double hoodPosition;
-
-        
     }
     
     public class presetShots {
-        public static final double trenchShotRPM = 100.0;
-        public static final double trenchShotHoodAngle = 0.0
-        ;
+        //Auto starting line, distance = 3.67m
+        public static final double trenchShotRPS = 83.0; //CHECK THIS
+        public static final double trenchShotHoodAngle = shooterConstants.hoodMinPosition + 0.45; //CHECK THIS
         //public static final double trenchShotTurretAngle = 0; //consider doing position to make it easier, just for the corner shot
+        
+        //In the corner, distance = 5.5 - 5.7m
+        public static final double backCornerShotRPS = 100; //CHECK THIS
+        public static final double backCornerShotHoodAngle = shooterConstants.hoodMinPosition + 0.09; //CHECK THIS
+        //public static final double backCornerShotTurretAngle = 0;
 
-        public static final double cornerShotRPM = 0; //SET THIS
-        public static final double cornerShotHoodAngle = 0.0; //SET THIS
-        //public static final double cornerShotTurretAngle = 0;
-
-        public static final double closeShotRPM = 0; //SET THIS
-        public static final double closeShotHoodAngle = 0.0; //SET THIS
+        //In between the hub and the tower, distance = 2.234m
+        public static final double closeShotRPS = 60.0; //CHECK THIS
+        public static final double closeShotHoodAngle = shooterConstants.hoodMinPosition + 0.01338; //CHECK THIS
         //public static final double closeShotTurretAngle = 0;
     }
 

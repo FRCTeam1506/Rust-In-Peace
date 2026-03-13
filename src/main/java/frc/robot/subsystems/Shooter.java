@@ -48,6 +48,7 @@ public class Shooter extends SubsystemBase {
   
   //SHOOTING VARIABLES:
   double shooterPower = 50;
+  double manualShootingRPS = 50.0; //Used to get points or just in case
 
   //HOOD VARIABLES:
   double hoodPosition = 0.0; //Position that hood is set to
@@ -110,23 +111,20 @@ public class Shooter extends SubsystemBase {
     shooterLeft.getConfigurator().apply(shooterConfigs);
     shooterRight.getConfigurator().apply(shooterConfigs);
 
-
-
+    //LOOKUP TABLES:
     finalHoodPosition.put(1.42, shooterConstants.hoodMinPosition);
     finalHoodPosition.put(1.91, shooterConstants.hoodMinPosition); //somewhat close to the hub
     finalHoodPosition.put(2.54, shooterConstants.hoodMinPosition + 0.02); //-0.005 old //at the climbing rack
     finalHoodPosition.put(3.25, shooterConstants.hoodMinPosition + 0.035);
     finalHoodPosition.put(3.67, shooterConstants.hoodMinPosition + 0.05); //0.01 old //at the back wall
 
-    finalHoodPosition.put(5.2, shooterConstants.hoodMaxPosition); //Full field
+    finalHoodPosition.put(6.0, shooterConstants.hoodMaxPosition); //Used to be 5.2, changed it after measuring the actual distance in pathplanner//Full field
     // finalHoodPosition.put(3.25, shooterConstants.hoodMinPosition + 0.035); //0.03 old //back against the back wall
     // finalHoodPosition.put(4.11, shooterConstants.hoodMinPosition + 0.07); //0.035 //in the square thing
     // finalHoodPosition.put(3.15, shooterConstants.hoodMinPosition + 0.02); 
-
-
-
     //finalHoodPosition.put(5.03, -1.66796875); //in the back corner
     //finalHoodPosition.put(3.23, -0.66); //auton starting point
+
 
     finalShooterRPS.put(1.42, 46.0);
     finalShooterRPS.put(1.91, 54.0);
@@ -137,7 +135,6 @@ public class Shooter extends SubsystemBase {
     // finalShooterRPS.put(3.25, 82.0);// consider lowering because it is overshooting
     // finalShooterRPS.put(4.11, 95.0);
     // finalShooterRPS.put(3.15, 62.0);
-
     //finalShooterRPS.put(5.03, 83.0);
     //finalShooterRPS.put(3.23, 70);
 
@@ -148,8 +145,6 @@ public class Shooter extends SubsystemBase {
     timeOfFlight.put(3.98, 1.2);
     timeOfFlight.put(5.2, 1.75); //Full field
     // timeOfFlight.put(4.11, 1.2);
-
-
     //timeOfFlight.put(5.03, 1.55);
     //timeOfFlight.put(3.23, 1.55);
   }
@@ -158,8 +153,8 @@ public class Shooter extends SubsystemBase {
     //shooterLeft.set(shooterPower/100); //MANUAL POWER
     //shooterRight.set(shooterPower/100); //MANUAL POWER
 
-    shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
-    shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
+    //shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
+    //shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
     if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
         hoodPosition = shooterConstants.hoodMinPosition;
       } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
@@ -167,13 +162,18 @@ public class Shooter extends SubsystemBase {
       } else {
         hoodPosition = finalHoodPosition.get(Constants.distToGoal);
       }
-    //shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
-    //shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
+    shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
+    shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
   }
 
-  public void manualShooter(double speed) {
-     shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
-     shooterRight.setControl(speedControl.withVelocity(shooterPower));
+  public void incrementalShooter() {
+     shooterLeft.setControl(speedControl.withVelocity(-manualShootingRPS)); //MANUAL RPS
+     shooterRight.setControl(speedControl.withVelocity(manualShootingRPS));
+  }
+
+  public void manualShooter(double rps) {
+     shooterLeft.setControl(speedControl.withVelocity(-rps)); //MANUAL RPS
+     shooterRight.setControl(speedControl.withVelocity(rps));
   }
 
   public void setHood(double position) {
@@ -182,10 +182,10 @@ public class Shooter extends SubsystemBase {
 
   //MANUAL SHOOTER:
   public void changeShooterUp() {
-    shooterPower += 1;
+    manualShootingRPS += 1;
   }
   public void changeShooterDown() {
-    shooterPower -= 1;
+    manualShootingRPS -= 1;
   }
 
   //MANUALHOOD:
@@ -244,32 +244,29 @@ public class Shooter extends SubsystemBase {
   //       setPoint = hoodEncoderPosition(Constants.shooterConstants.hoodMinPosition);
   //       setDefaultCommand(new InstantCommand(() -> hood.set(ControlMode.PercentOutput, setPoint)));
   // }
+  public void endShooter() {
+  // Set motors to 0
+  shooterLeft.set(0);
+  shooterRight.set(0);
+  // Set the hood target to your "down" position
+  hoodPosition = shooterConstants.hoodMinPosition;
+}
 
-  public void lowerHood() {
-    hoodPosition = shooterConstants.hoodMinPosition;
-  }
-  public void LUTHood() {
-    hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-  }
   @Override
   public void periodic() {
-        
 
-    if(toggleManualHood == true) {
-    }
-    if(toggleManualHood == false) {
-      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //take all of this out when trying to get defualt command to work
         hoodPosition = shooterConstants.hoodMinPosition;
       } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
         hoodPosition = shooterConstants.hoodMaxPosition;
       } else {
         hoodPosition = finalHoodPosition.get(Constants.distToGoal);
       }
-    }
+    
 
     Constants.shooterConstants.hoodPosition = hoodPosition;
-    setPoint = hoodEncoderPosition(hoodPosition);
-    //hood.set(ControlMode.PercentOutput, setPoint);
+    setPoint = hoodEncoderPosition(hoodPosition); //take this out when trying to get defualt command to work
+    hood.set(ControlMode.PercentOutput, setPoint); //take this out when trying to get defualt command to work
 
     //add lower hood if going under trench
     
