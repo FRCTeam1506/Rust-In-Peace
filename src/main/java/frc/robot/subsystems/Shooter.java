@@ -255,6 +255,10 @@ public class Shooter extends SubsystemBase {
   @Override
   public void periodic() {
 
+    if(toggleManualHood == true) {
+
+    }
+    else{
       if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //take all of this out when trying to get defualt command to work
         hoodPosition = shooterConstants.hoodMinPosition;
       } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
@@ -262,6 +266,7 @@ public class Shooter extends SubsystemBase {
       } else {
         hoodPosition = finalHoodPosition.get(Constants.distToGoal);
       }
+    }
     
 
     Constants.shooterConstants.hoodPosition = hoodPosition;

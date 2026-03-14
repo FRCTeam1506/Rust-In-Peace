@@ -18,8 +18,8 @@ public class Constants {
         public static final int shooterRightID = 61;
         public static final int hoodID = 16;
 
-        public static final double hoodMaxPosition = -0.085;// Maybe 0.105 //set 0.0 //0.1
-        public static final double hoodMinPosition = hoodMaxPosition - 0.135; //-0.035
+        public static final double hoodMaxPosition = 0.015;// Maybe 0.105 //set 0.0 //0.1
+        public static final double hoodMinPosition = -0.0419921875; //-0.035
         
         public static double shooterPower;  
         public static double hoodPosition;
@@ -54,7 +54,7 @@ public class Constants {
     
 
     public class climberConstants {
-        public static final int climberID = 0; // SET THIS
+        public static final int climberID = 7; // SET THIS
         public static double climberUpPosition = 0; //SET THIS
         public static double climberDownPosition = 0; //SET THIS
     }

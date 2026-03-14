@@ -9,6 +9,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.climberConstants;
@@ -56,6 +57,9 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
+  SmartDashboard.putNumber("Turret Position ", climber.getPosition().getValueAsDouble());
+
+
     // This method will be called once per scheduler run
   }
 }

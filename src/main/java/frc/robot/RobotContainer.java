@@ -168,7 +168,7 @@ public class RobotContainer {
         driver.R2().whileTrue(new shoot(shooter, intake));
         driver.R2().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
         
-        driver.square().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driver.circle().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         //Outtake - runs intake in reverse and lowers intake lift to outtake balls
         operator.start().whileTrue(new InstantCommand(() -> intake.hopper(-0.6, 0.85)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(0.8)))));
@@ -190,6 +190,18 @@ public class RobotContainer {
         //Rev intake to help feed balls
         driver.R1().whileTrue(new InstantCommand(() -> intake.runIntake(0.8)));
         driver.R1().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
+
+        driver.povUp().whileTrue(new InstantCommand(() -> climber.runClimber(-0.5)));
+        driver.povUp().whileFalse(new InstantCommand(() -> climber.runClimber(0)));
+        driver.povDown().whileTrue(new InstantCommand(() -> climber.runClimber(0.5)));
+        driver.povDown().whileFalse(new InstantCommand(() -> climber.runClimber(0)));
+
+        driver.povLeft().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
+        driver.povRight().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
+        driver.povLeft().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        driver.povRight().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        
+
 
         //TO IMPLEMENT:
         //driver.R1().whileTrue(new InstantCommand(() -> MAIL OUTPOST))
@@ -213,7 +225,7 @@ public class RobotContainer {
         //OPERATOR CONTROLS:
         //Run intake lift up, then zero when dpad up is released.
         operator.povUp().whileTrue(new InstantCommand(() -> intake.runIntakeLift(-0.5)));
-        operator.povUp().whileFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntake(0))));
+        operator.povUp().onFalse(new InstantCommand(() -> intake.zeroIntakeLift()).alongWith(new InstantCommand(() -> intake.runIntakeLift(0))));
         
         //PRESET SHOTS:
         //Trench shot preset
@@ -233,7 +245,7 @@ public class RobotContainer {
         operator.start().whileFalse(new InstantCommand(() -> intake.hopper(0, 0)).alongWith(new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.upIntake)).alongWith(new InstantCommand(() -> intake.stopAllIntake()))));
 
         //Zeros:
-        operator.rightStick().whileTrue(new InstantCommand(() -> intake.zeroIntakeLift()));
+        operator.rightStick().whileTrue(new InstantCommand(() -> shooter.toggleManualHood = true));
         operator.leftStick().whileTrue(new InstantCommand(() -> shooter.zeroHood()));
 
         //Macrointake
@@ -245,19 +257,26 @@ public class RobotContainer {
         operator.rightTrigger().whileFalse(new InstantCommand( () -> shooter.stopShooter()).alongWith(new InstantCommand( () -> intake.stopAllIntake())));
 
         //Rev intake to help feed balls
-        operator.rightBumper().whileTrue(new InstantCommand(() -> intake.runIntake(0.8)));
-        operator.rightBumper().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
+        //operator.rightBumper().whileTrue(new InstantCommand(() -> intake.runIntake(0.8)));
+        //operator.rightBumper().whileFalse(new InstantCommand(() -> intake.runIntake(0)));
         //operator.rightBumper().whileTrue(new InstantCommand (() -> MAIL OUPOST)) TODO: FILL IN MAIL OUTPOST COMMAND
+
+        operator.rightStick().onTrue(new InstantCommand(() -> shooter.toggleManualHood = true));
+        operator.leftStick().onTrue(new InstantCommand(() -> shooter.toggleManualHood = false));
+        operator.rightBumper().whileTrue(new InstantCommand(() -> shooter.changeHoodUp()));
+        operator.leftBumper().whileTrue(new InstantCommand(() -> shooter.changeHoodDown()));
+
         //operator.rightBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
 
         //operator.leftBumper().whileTrue(new InstantCommand (() -> MAIL DEPOT)) TODO: FILL IN MAIL DEPOT COMMAND
         //operator.leftBumper().whileFalse(new InstantCommand (() -> shooter.stopShooter()));
 
         //Manual Turret
-        // operator.leftBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
-        // operator.rightBumper().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
-        // operator.leftBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
-        // operator.rightBumper().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        operator.povLeft().whileTrue(new InstantCommand(() -> turret.manualTurret(0.25)));
+        operator.povRight().whileTrue(new InstantCommand(() -> turret.manualTurret(-0.25)));
+        operator.povLeft().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+        operator.povRight().whileFalse(new InstantCommand(() -> turret.manualTurret(0)));
+
 
         //TESTING CONTROLS:
         //MANUAL TURRET
