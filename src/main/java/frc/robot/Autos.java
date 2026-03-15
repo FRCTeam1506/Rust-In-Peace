@@ -43,8 +43,8 @@ public class Autos {
     public void makeNamedCommands(){
         NamedCommands.registerCommand("Run Shooter", new shoot(shooter, intake));
         NamedCommands.registerCommand("Stop Shooter", new InstantCommand(() -> shooter.stopShooter()).alongWith(new InstantCommand(() -> intake.hopper(0, 0))));
-        NamedCommands.registerCommand("Run Intake", new InstantCommand(() -> intake.intakeLift(Constants.intakeConstants.loweredIntake)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
-        NamedCommands.registerCommand("Stop Intake", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.intakeLift(intakeConstants.upIntake))));
+        NamedCommands.registerCommand("Run Intake", new InstantCommand(() -> intake.runIntakeLift(0.18)).alongWith(new InstantCommand(() -> intake.runIntake(-0.8))));
+        NamedCommands.registerCommand("Stop Intake", new InstantCommand( () -> intake.runIntake(0.0)).alongWith(new InstantCommand(() -> intake.runIntakeLift(-0.12))));
         //NamedCommands.registerCommand("ZeroGyro", drivetrain.runOnce(() -> drivetrain.seedFieldCentric()).withTimeout(0.05));
         NamedCommands.registerCommand("Climber Up", new InstantCommand(() -> climber.climberUp()));
         NamedCommands.registerCommand("Climber Down", new InstantCommand(() -> climber.climberDown()));

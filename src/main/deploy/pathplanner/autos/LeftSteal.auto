@@ -56,19 +56,31 @@
         {
           "type": "named",
           "data": {
+            "name": "Run Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Run Shooter"
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 4.0
+            "waitTime": 5.0
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Stop Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Intake"
           }
         },
         {
@@ -96,7 +108,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "LeftSecond"
+                  "pathName": "LeftFifth"
                 }
               },
               {
@@ -117,13 +129,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "LeftThirdSteal"
+            "pathName": "LeftSixth"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Run Intake"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Run Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Intake"
           }
         }
       ]

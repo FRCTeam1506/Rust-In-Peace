@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "New Center"
+            "pathName": "back"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Run Shooter"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stop Shooter"
           }
         }
       ]

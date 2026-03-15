@@ -54,7 +54,7 @@ public class Shooter extends SubsystemBase {
   double hoodPosition = 0.0; //Position that hood is set to
 
   public double setPoint;
-  public boolean toggleManualHood;
+  public boolean toggleManualHood = true;
 
   
   final VelocityVoltage speedControl = new VelocityVoltage(12);
@@ -90,7 +90,7 @@ public class Shooter extends SubsystemBase {
     var shooterConfigs = new TalonFXConfiguration();
 
     shooterConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
-    shooterConfigs.CurrentLimits.StatorCurrentLimit = 80;
+    shooterConfigs.CurrentLimits.StatorCurrentLimit = 100;
 
     var motionMagicConfigs = shooterConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 220; // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
@@ -102,7 +102,7 @@ public class Shooter extends SubsystemBase {
     
     slot0Configs.kS = 2.5;//0.24 // add 0.24 V to overcome friction //0.24
     slot0Configs.kV = 0;//0.12 // apply 12 V for a target velocity of 100 rps //0.12
-    slot0Configs.kP = 5;//100 //2.5
+    slot0Configs.kP = 50;//100 //2.5
     slot0Configs.kI = 0;
     slot0Configs.kD = 0;//0.25
   
@@ -155,13 +155,13 @@ public class Shooter extends SubsystemBase {
 
     //shooterLeft.setControl(speedControl.withVelocity(-shooterPower)); //MANUAL RPS
     //shooterRight.setControl(speedControl.withVelocity(shooterPower)); //MANUAL RPS
-    if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
-        hoodPosition = shooterConstants.hoodMinPosition;
-      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-        hoodPosition = shooterConstants.hoodMaxPosition;
-      } else {
-        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-      }
+    // if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //
+    //     hoodPosition = shooterConstants.hoodMinPosition;
+    //   } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+    //     hoodPosition = shooterConstants.hoodMaxPosition;
+    //   } else {
+    //     hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+    //   }
     shooterLeft.setControl(speedControl.withVelocity(-finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
     shooterRight.setControl(speedControl.withVelocity(finalShooterRPS.get(Constants.distToGoal))); //AUTO POWER
   }
@@ -182,20 +182,21 @@ public class Shooter extends SubsystemBase {
 
   //MANUAL SHOOTER:
   public void changeShooterUp() {
-    manualShootingRPS += 1;
+    shooterPower += 1;
   }
   public void changeShooterDown() {
-    manualShootingRPS -= 1;
+    shooterPower -= 1;
   }
 
   //MANUALHOOD:
   public void changeHoodUp() {
-    hoodPosition += 0.005;
+    //hoodPosition += 0.005;
+    hood.set(TalonSRXControlMode.PercentOutput, 0.25);
   }
 
   public void changeHoodDown() {
-  
-    hoodPosition -= 0.005;
+    hood.set(TalonSRXControlMode.PercentOutput, -0.25);
+    //hoodPosition -= 0.005;
   }
 
 
@@ -220,7 +221,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void stopHood() {
-    hood.set(ControlMode.PercentOutput, 0);
+    hood.set(TalonSRXControlMode.PercentOutput, 0);
   }
 
   public void stopShooter() {
@@ -258,20 +259,23 @@ public class Shooter extends SubsystemBase {
     if(toggleManualHood == true) {
 
     }
-    else{
-      if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //take all of this out when trying to get defualt command to work
-        hoodPosition = shooterConstants.hoodMinPosition;
-      } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
-        hoodPosition = shooterConstants.hoodMaxPosition;
-      } else {
-        hoodPosition = finalHoodPosition.get(Constants.distToGoal);
-      }
-    }
+    // else{
+    //   if (finalHoodPosition.get(Constants.distToGoal) > shooterConstants.hoodMaxPosition) { //take all of this out when trying to get defualt command to work
+    //     hoodPosition = shooterConstants.hoodMinPosition;
+    //   } else if (finalHoodPosition.get(Constants.distToGoal) < shooterConstants.hoodMinPosition) {
+    //     hoodPosition = shooterConstants.hoodMaxPosition;
+    //   } else {
+    //     hoodPosition = finalHoodPosition.get(Constants.distToGoal);
+    //   }
+    //   Constants.shooterConstants.hoodPosition = hoodPosition;
+    //   setPoint = hoodEncoderPosition(hoodPosition);
+    //   hood.set(ControlMode.PercentOutput, setPoint);
+    // }
     
 
-    Constants.shooterConstants.hoodPosition = hoodPosition;
-    setPoint = hoodEncoderPosition(hoodPosition); //take this out when trying to get defualt command to work
-    hood.set(ControlMode.PercentOutput, setPoint); //take this out when trying to get defualt command to work
+    // Constants.shooterConstants.hoodPosition = hoodPosition;
+    //setPoint = hoodEncoderPosition(hoodPosition); //take this out when trying to get defualt command to work
+    //hood.set(ControlMode.PercentOutput, setPoint); //take this out when trying to get defualt command to work
 
     //add lower hood if going under trench
     

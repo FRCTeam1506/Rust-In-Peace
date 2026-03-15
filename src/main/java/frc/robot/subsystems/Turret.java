@@ -48,17 +48,17 @@ public class Turret extends SubsystemBase {
     final double middleY = 4;
     final double blueLine = 4.1;
 
-    final double goalRightRedY = 6;//7.211
-    final double goalRightRedX = 13.302;
+    final double goalRightRedY = 7;//7.211
+    final double goalRightRedX = 15;
 
-    final double goalLeftRedY = 2; //0.8
-    final double goalLeftRedX = 13.302;
+    final double goalLeftRedY = 1.5; //0.8
+    final double goalLeftRedX = 15;
 
-    final double goalRightBlueY = 6; //7.756
-    final double goalRightBlueX = 3.097;
+    final double goalRightBlueY = 1.2; //7.756
+    final double goalRightBlueX = 2;
 
-    final double goalLeftBlueY = 2; //3
-    final double goalLeftBlueX = 0.8;
+    final double goalLeftBlueY = 7; //3
+    final double goalLeftBlueX = 1.5;
 
 
     //Math variables
@@ -146,10 +146,16 @@ public class Turret extends SubsystemBase {
   }
 
   public void shootModeChange(boolean up) {
-    if (up == true) {
-      shootMode += 1;
-    } else {
-      shootMode -= 1;
+    // if (up == true) {
+    //   shootMode += 1;
+    // } else {
+    //   shootMode -= 1;
+    // }
+    if(up == true) {
+      shootMode = 0;
+    }
+    else {
+      shootMode = 1;
     }
   }
 
@@ -203,14 +209,14 @@ public class Turret extends SubsystemBase {
     turretAngle = toDegree - heading;
 
     //Set min and max
-    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 85);
+    finalTurretAngle = edu.wpi.first.math.MathUtil.inputModulus(turretAngle, -90, 130);
 
     //Set turret to angle if auto aim is being used
-    if (shootMode > 0) {
-      setTurretToAngle(finalTurretAngle);
-    } else {
+    // if (shootMode > 0) {
+    //   setTurretToAngle(finalTurretAngle);
+    // } else {
       
-    }
+    // }
 
     //Get dist to goal
     targetVec = goalLocation.minus(vRobotPose);
@@ -219,91 +225,91 @@ public class Turret extends SubsystemBase {
     //System.out.println("Dist to goal" + dist);
 
     //Shoot mode
-    switch (shootMode) {
-        case 0: //Keep turret at zero
-          //turret.setControl(m_motmag.withPosition(0));
-          //Constants.manualTurret = true;
-          break;
-        case 1: //Change goal based on robot position
-            if(red == true) {
-                if (robotPoseX > redLine) {
-                    goalLocation = new Translation2d(goalRedX, goalRedY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
-                if(robotPoseY < 4 && robotPoseX < redLine) {//left (from red perspective)
-                    goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
-                if(robotPoseY > 4 && robotPoseX < redLine) { 
-                    goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
-                }
-                else { //blue
-                if (robotPoseX < blueLine) {
-                    goalLocation = new Translation2d(goalBlueX, goalBlueY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
-                if(robotPoseY < 4 && robotPoseX > blueLine) { //left (from red perspective)
-                    goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
-                if(robotPoseY > 4 && robotPoseX > blueLine) {
-                    goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
-                    thetaX = goalLocation.getX() - vRobotX;
-                    thetaY = goalLocation.getY() - vRobotY;
-                }
+    // switch (shootMode) {
+    //     case 0: //Keep turret at zero
+    //       //turret.setControl(m_motmag.withPosition(0));
+    //       //Constants.manualTurret = true;
+    //       break;
+    //     case 1: //Change goal based on robot position
+    //         if(red == true) {
+    //             if (robotPoseX > redLine) {
+    //                 goalLocation = new Translation2d(goalRedX, goalRedY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
+    //             if(robotPoseY < 4 && robotPoseX < redLine) {//left (from red perspective)
+    //                 goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
+    //             if(robotPoseY > 4 && robotPoseX < redLine) { 
+    //                 goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
+    //             }
+    //             else { //blue
+    //             if (robotPoseX < blueLine) {
+    //                 goalLocation = new Translation2d(goalBlueX, goalBlueY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
+    //             if(robotPoseY < 4 && robotPoseX > blueLine) { //left (from red perspective)
+    //                 goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
+    //             if(robotPoseY > 4 && robotPoseX > blueLine) {
+    //                 goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
+    //                 thetaX = goalLocation.getX() - vRobotX;
+    //                 thetaY = goalLocation.getY() - vRobotY;
+    //             }
                 
-            }
-            //Constants.manualTurret = false;
-            break;
-        case 2: //Goal only
-            if (red == true) {
-                goalLocation = new Translation2d(goalRedX, goalRedY);
-                thetaX = goalLocation.getX() - vRobotX;
-                thetaY = goalLocation.getY() - vRobotY;
-            } else {
-                goalLocation = new Translation2d(goalBlueX, goalBlueY);
-                thetaX = goalLocation.getX() - vRobotX;
-                thetaY = goalLocation.getY() - vRobotY;
-            }
-            //Constants.manualTurret = false;
-            break;
-        case 3: //Aim to the left side for mailing DRIVER PERSPECTIVE
-            if (red == true) {
-            goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-            } else {
-            goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-            }
-            //Constants.manualTurret = false;
-            break;
-        case 4: //Aim to the right side for mailing DRIVER PERSPECTIVE
-            if (red == true) {
-            goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-            } else {
-            goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
-            thetaX = goalLocation.getX() - vRobotX;
-            thetaY = goalLocation.getY() - vRobotY;
-            }
-            //Constants.manualTurret = false;
-            break;
+    //         }
+    //         //Constants.manualTurret = false;
+    //         break;
+    //     case 2: //Goal only
+    //         if (red == true) {
+    //             goalLocation = new Translation2d(goalRedX, goalRedY);
+    //             thetaX = goalLocation.getX() - vRobotX;
+    //             thetaY = goalLocation.getY() - vRobotY;
+    //         } else {
+    //             goalLocation = new Translation2d(goalBlueX, goalBlueY);
+    //             thetaX = goalLocation.getX() - vRobotX;
+    //             thetaY = goalLocation.getY() - vRobotY;
+    //         }
+    //         //Constants.manualTurret = false;
+    //         break;
+    //     case 3: //Aim to the left side for mailing DRIVER PERSPECTIVE
+    //         if (red == true) {
+    //         goalLocation = new Translation2d(goalLeftRedX, goalLeftRedY);
+    //         thetaX = goalLocation.getX() - vRobotX;
+    //         thetaY = goalLocation.getY() - vRobotY;
+    //         } else {
+    //         goalLocation = new Translation2d(goalLeftBlueX, goalLeftBlueY);
+    //         thetaX = goalLocation.getX() - vRobotX;
+    //         thetaY = goalLocation.getY() - vRobotY;
+    //         }
+    //         //Constants.manualTurret = false;
+    //         break;
+    //     case 4: //Aim to the right side for mailing DRIVER PERSPECTIVE
+    //         if (red == true) {
+    //         goalLocation = new Translation2d(goalRightRedX, goalRightRedY);
+    //         thetaX = goalLocation.getX() - vRobotX;
+    //         thetaY = goalLocation.getY() - vRobotY;
+    //         } else {
+    //         goalLocation = new Translation2d(goalRightBlueX, goalRightBlueY);
+    //         thetaX = goalLocation.getX() - vRobotX;
+    //         thetaY = goalLocation.getY() - vRobotY;
+    //         }
+    //         //Constants.manualTurret = false;
+    //         break;
     
-        default: //Anything else stop turret
-            turret.set(0);
-            //Constants.manualTurret = true;
-            break;
-    }
+    //     default: //Anything else stop turret
+    //         turret.set(0);
+    //         //Constants.manualTurret = true;
+    //         break;
+    // }
 
     //Print out info
     SmartDashboard.putNumber("Turret Position ", turret.getPosition().getValueAsDouble());

@@ -18,8 +18,8 @@ public class Constants {
         public static final int shooterRightID = 61;
         public static final int hoodID = 16;
 
-        public static final double hoodMaxPosition = 0.015;// Maybe 0.105 //set 0.0 //0.1
-        public static final double hoodMinPosition = -0.0419921875; //-0.035
+        public static final double hoodMaxPosition = -0.08154296875;// Maybe 0.105 //set 0.0 //0.1
+        public static final double hoodMinPosition = -0.216552734375; //-0.035
         
         public static double shooterPower;  
         public static double hoodPosition;
@@ -47,9 +47,10 @@ public class Constants {
         public static final int hopperID = 25;
         public static final int intakeID = 60;
         public static final int liftID = 14;
+        public static final int intakeLiftEncoder = 17;
 
-        public static final double loweredIntake = 3.4;
-        public static final double upIntake = 0;
+        public static final double loweredIntake = 0.91; //4.1
+        public static final double upIntake = 0.336; //0.7
     }
     
 

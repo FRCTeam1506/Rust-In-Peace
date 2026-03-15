@@ -21,13 +21,13 @@ public class PresetShots extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
       new InstantCommand(() -> shooter.manualShooter(rps)),
-      new InstantCommand(() -> shooter.setHood(hoodAngle)),
-      new WaitCommand(0.3),
+      //new InstantCommand(() -> shooter.setHood(hoodAngle)),
+      new WaitCommand(0.5),
       new InstantCommand(() -> intake.hopper(0, -0.1)),
-      new WaitCommand(0.3),
-      new InstantCommand(() -> intake.hopper(0.6,-0.5)),
-      new InstantCommand(() -> shooter.manualShooter(rps)),
-      new InstantCommand(() -> shooter.setHood(hoodAngle))
+      new WaitCommand(0.4),
+      new InstantCommand(() -> intake.hopper(0.6,-0.7)),
+      new InstantCommand(() -> shooter.manualShooter(rps))
+      //new InstantCommand(() -> shooter.setHood(hoodAngle))
     );
   }
 }

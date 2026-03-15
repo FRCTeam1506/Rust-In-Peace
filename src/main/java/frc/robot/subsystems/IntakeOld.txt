@@ -4,13 +4,12 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -25,23 +24,21 @@ public class Intake extends SubsystemBase {
   private CANcoder liftEncoder = new CANcoder(intakeConstants.intakeLiftEncoder);
 
 
-  final MotionMagicVoltage m_motmag = new MotionMagicVoltage(12);
+  final MotionMagicVoltage m_motmag = new MotionMagicVoltage(0);
   /** Creates a new Intake. */
   public Intake() {
-    CANcoderConfiguration encoderConfigs = new CANcoderConfiguration();
-    encoderConfigs.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
-    liftEncoder.getConfigurator().apply(encoderConfigs);
     var talonFXConfigs = new TalonFXConfiguration();
     TalonFXConfiguration config = new TalonFXConfiguration();
-    
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 80;
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    //config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    //config.Feedback.FeedbackRemoteSensorID = liftEncoder.getDeviceID();
 
-    intakeLift.getConfigurator().apply(config);
-    intake.getConfigurator().apply(config);
+    //.getConfigurator().apply(config);
+    //intake.getConfigurator().apply(config);
 
     var motionMagicConfigs = talonFXConfigs.MotionMagic;
     motionMagicConfigs.MotionMagicCruiseVelocity = 60;//180 // 80 rps cruise velocity //60 rps gets to L4 in 1.92s //100 //160 //220 before 3/20 bc elevator maltensioned //220 FRCC
@@ -57,12 +54,15 @@ public class Intake extends SubsystemBase {
     slot0Configs.kI = 0;
     slot0Configs.kD = 0.1;
 
+
     config.Slot0 = slot0Configs;
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
 
+    
     intakeLift.getConfigurator().apply(motionMagicConfigs);
-    intakeLift.getConfigurator().apply(slot0Configs); 
+    intakeLift.getConfigurator().apply(slot0Configs);
+    intakeLift.getConfigurator().apply(config); 
 
     intake.getConfigurator().apply(slot0Configs); 
   }
@@ -77,12 +77,11 @@ public class Intake extends SubsystemBase {
   }
 
   public void intakeLift(double Pos) {
-    intakeLift.setControl(m_motmag.withPosition(Pos));
+    intakeLift.setControl(m_motmag.withPosition(0.3));
   }
 
   public void runIntakeLift(double speed) {
     intakeLift.set(speed);
-    
   }
   
   public void zeroIntakeLift() {
@@ -101,12 +100,12 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // if(intakeLift.getTorqueCurrent().getValueAsDouble() > 90 || intakeLift.getTorqueCurrent().getValueAsDouble() < -82) {
-    //   intakeLift.set(0);
-    // }
-    intakeLift.setPosition(liftEncoder.getPosition().getValueAsDouble());
-    SmartDashboard.putNumber("torque", intakeLift.getTorqueCurrent().getValueAsDouble());
+    //intakeLift.setPosition(liftEncoder.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("intake lift position ", liftEncoder.getPosition().getValueAsDouble());
+    SmartDashboard.putNumber("intake lift encoder position ", intakeLift.getPosition().getValueAsDouble());
+
 
     // This method will be called once per scheduler run
   }
 }
+

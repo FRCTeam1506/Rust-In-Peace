@@ -74,7 +74,7 @@ public class Robot extends TimedRobot {
 
         // Pose2d pose = new Pose2d(llMeasurement.pose.getX(), llMeasurement.pose.getY(), llMeasurement.pose.getRotation().minus(new Rotation2d(0))); //minus rotation2d(math.pi)
 
-        m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_left.pose, llMeasurement_left.timestampSeconds);
+        //m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_left.pose, llMeasurement_left.timestampSeconds);
 
         //System.out.println("left " + llMeasurement_left.pose);
         //System.out.println("heading " + headingDeg);
@@ -83,14 +83,14 @@ public class Robot extends TimedRobot {
       }
 
       if (llMeasurement_right != null && llMeasurement_right.tagCount > 0 && Math.abs(omegaRps) < 2.0){// && LimelightHelpers.getTA(VisionConstants.LL_RIGHT) > 0.33) {
-        m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_right.pose, llMeasurement_right.timestampSeconds);
+        //m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_right.pose, llMeasurement_right.timestampSeconds);
         //System.out.println("right " + llMeasurement_right.pose);
         //System.out.println("heading " + headingDeg);
 
       }
 
       if (llMeasurement_back != null && llMeasurement_back.tagCount > 0 && Math.abs(omegaRps) < 2.0){// && LimelightHelpers.getTA(VisionConstants.LL_BACK) > 0.33) {
-        m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_back.pose, llMeasurement_back.timestampSeconds);
+        //m_robotContainer.drivetrain.addVisionMeasurement(llMeasurement_back.pose, llMeasurement_back.timestampSeconds);
         //System.out.println("right " + llMeasurement_right.pose);
         //System.out.println("heading " + headingDeg);
 
@@ -131,7 +131,7 @@ public class Robot extends TimedRobot {
     m_robotContainer.shooter.automaticHood();
 
     if(DriverStation.getMatchTime() <= 10) { //this means that we are at home
-      m_robotContainer.intake.zeroIntakeLift();
+      //m_robotContainer.intake.zeroIntakeLift();
       //m_robotContainer.shooter.zeroHood();
     }
     
