@@ -62,15 +62,15 @@ public class Turret extends SubsystemBase {
 
 
     //Math variables
-    double theta;
+    public static double theta;
     double thetaX, thetaY;
     double angleToGoal;
     double toDegree;
     double turretAngleTarget;
     double angleToPos;
-    double turretAngle;
+    public static double turretAngle;
     double dist;
-    double finalTurretAngle;
+    public static double finalTurretAngle;
     Translation2d targetVec;
 
     //Robot Poses
